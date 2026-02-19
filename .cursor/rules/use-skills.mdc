@@ -1,0 +1,38 @@
+---
+description: Route every request through the appropriate installed agent skills before responding
+alwaysApply: true
+---
+
+# Always Use Installed Skills
+
+Before responding to any request, check which installed skills are relevant and read their SKILL.md to follow their instructions. Multiple skills may apply to a single request.
+
+## Skill Registry
+
+| Skill | Path | Trigger |
+|-------|------|---------|
+| Brainstorming | ~/.agents/skills/brainstorming/SKILL.md | Any creative work: new features, components, functionality, or behavior changes. **Must run before implementation.** |
+| Software Architecture | ~/.agents/skills/software-architecture/SKILL.md | Writing, designing, reviewing, or analyzing any code |
+| Subagent-Driven Development | ~/.agents/skills/subagent-driven-development/SKILL.md | Executing an implementation plan with independent tasks |
+| Prompt Engineering Patterns | ~/.agents/skills/prompt-engineering-patterns/SKILL.md | Designing, optimizing, or debugging LLM prompts |
+| Web Design Guidelines | ~/.agents/skills/web-design-guidelines/SKILL.md | Reviewing or building UI — accessibility, UX, design audits |
+| Planning with Files | ~/.claude/skills/SKILL.md | Complex multi-step tasks (3+ steps) or research projects |
+| Find Skills | ~/.agents/skills/find-skills/SKILL.md | User asks "how do I do X", wants to extend capabilities, or needs a domain-specific tool |
+| Create Rule | ~/.cursor/skills-cursor/create-rule/SKILL.md | Creating or modifying .cursor/rules/*.mdc files |
+| Create Skill | ~/.cursor/skills-cursor/create-skill/SKILL.md | Creating new SKILL.md files or skill directories |
+| Create Subagent | ~/.cursor/skills-cursor/create-subagent/SKILL.md | Creating custom subagent .md files in .cursor/agents/ |
+| Migrate to Skills | ~/.cursor/skills-cursor/migrate-to-skills/SKILL.md | Converting old rules or slash commands to skills format |
+| Update Cursor Settings | ~/.cursor/skills-cursor/update-cursor-settings/SKILL.md | Changing editor settings, themes, keybindings, or settings.json |
+| Performance Optimization | .agents/skills/performance-optimization/SKILL.md | Improving page load times, bundle size, database queries, caching, React optimization, or fixing performance bottlenecks |
+| Code Refactoring | .agents/skills/code-refactoring/SKILL.md | Simplifying complex code, removing duplication, applying design patterns (Extract Method, SOLID, DRY), or cleaning up technical debt |
+
+## Routing Rules
+
+1. **Read before acting** — For each matching skill, read its SKILL.md and follow its instructions immediately.
+2. **Multiple skills can apply** — e.g. a new feature request triggers both Brainstorming and Software Architecture.
+3. **Brainstorming gates implementation** — Never start coding a new feature without going through Brainstorming first and getting user approval on the design.
+4. **Software Architecture always applies to code** — Any code you write, review, or modify must follow its principles (early returns, no deep nesting, library-first, domain naming, clean architecture).
+5. **Planning with Files for complex work** — If a task requires 3+ steps, create task_plan.md, findings.md, and progress.md before starting.
+6. **Find Skills as fallback** — When no installed skill covers the domain, search for one via `npx skills find`.
+7. **Performance Optimization for perf work** — When fixing slowness, optimizing queries, reducing bundle size, or improving Web Vitals, follow its measurement-first approach.
+8. **Code Refactoring for cleanup** — When simplifying code, removing duplication, or applying design patterns, follow its behavior-preservation workflow (test first, small steps, validate after).

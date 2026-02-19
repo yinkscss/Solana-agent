@@ -1,0 +1,24 @@
+[server]
+port = 8911
+log_level = "info"
+
+[solana]
+rpc_url = "https://api.devnet.solana.com"
+commitment = "confirmed"
+
+[signer]
+type = "local"
+private_key_path = "/config/fee-payer.json"
+
+[validation]
+token_allowlist = [
+  "So11111111111111111111111111111111111111112",
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+]
+program_allowlist = [
+  "11111111111111111111111111111111",
+  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+  "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+]
+max_transaction_fee_lamports = 100000
