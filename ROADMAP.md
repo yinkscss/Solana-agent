@@ -109,13 +109,13 @@ gantt
 
 | Milestone | Status | Target Date | Actual Date | Owner | Notes |
 |---|---|---|---|---|---|
-| **M2.1** Agent Runtime MVP | ⬜ Not Started | Week 16 | — | Backend | LLM integration + tool system |
-| **M2.2** Jupiter Swap Adapter | ⬜ Not Started | Week 17 | — | DeFi | Token swap integration |
-| **M2.3** Raydium/Orca Adapters | ⬜ Not Started | Week 20 | — | DeFi | LP + AMM integrations |
-| **M2.4** Staking Adapters | ⬜ Not Started | Week 20 | — | DeFi | Marinade/Jito staking |
-| **M2.5** Notification Service | ⬜ Not Started | Week 18 | — | Backend | WebSocket + webhooks |
-| **M2.6** Dashboard MVP | ⬜ Not Started | Week 22 | — | Frontend | Agent/wallet/tx monitoring |
-| **M2.7** SDK Beta (v0.5) | ⬜ Not Started | Week 22 | — | SDK | + Agent + DeFi methods |
+| **M2.1** Agent Runtime MVP | ✅ Complete | Week 16 | 2026-02-19 | Backend | LLM integration + tool system (42 tests) |
+| **M2.2** Jupiter Swap Adapter | ✅ Complete | Week 17 | 2026-02-19 | DeFi | Token swap integration |
+| **M2.3** Raydium/Orca Adapters | ✅ Complete | Week 20 | 2026-02-19 | DeFi | LP + AMM integrations |
+| **M2.4** Staking Adapters | ✅ Complete | Week 20 | 2026-02-19 | DeFi | Marinade staking (36 tests total) |
+| **M2.5** Notification Service | ✅ Complete | Week 18 | 2026-02-19 | Backend | WebSocket + webhooks (50 tests) |
+| **M2.6** Dashboard MVP | ✅ Complete | Week 22 | 2026-02-19 | Frontend | Next.js 15 + shadcn/ui, 11 routes |
+| **M2.7** SDK Beta (v0.5) | ✅ Complete | Week 22 | 2026-02-19 | SDK | + Agent + DeFi modules (29 tests) |
 | **M2.8** Mainnet-Beta Prep | ⬜ Not Started | Week 24 | — | Infra | Security audit, load test |
 | **M2.9** Phase 2 Sign-off | ⬜ Not Started | Week 26 | — | All | Mainnet soft launch |
 

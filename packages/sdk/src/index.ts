@@ -3,6 +3,8 @@ export { SolAgentClient } from "./client.js";
 export { WalletModule } from "./modules/wallet.module.js";
 export { PolicyModule } from "./modules/policy.module.js";
 export { TransactionModule } from "./modules/transaction.module.js";
+export { AgentModule } from "./modules/agent.module.js";
+export { DeFiModule } from "./modules/defi.module.js";
 
 export {
   SolAgentSDKError,
@@ -31,4 +33,12 @@ export type {
   EvaluateTransactionParams,
   Transaction,
   CreateTransactionParams,
+  Agent,
+  CreateAgentParams,
+  AgentExecution,
+  SwapQuote,
+  SwapParams,
+  StakeParams,
+  PriceFeed,
+  DeFiProtocol,
 } from "./types/index.js";

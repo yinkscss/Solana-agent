@@ -122,6 +122,80 @@ export interface CreateTransactionParams {
   urgency?: "low" | "medium" | "high";
 }
 
+// ── Agent ───────────────────────────────────────────────────────────────────
+
+export interface Agent {
+  id: string;
+  orgId: string;
+  walletId: string;
+  name: string;
+  description: string;
+  status: string;
+  framework: string;
+  llmProvider: string;
+  model: string;
+  systemPrompt: string;
+  tools: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAgentParams {
+  orgId: string;
+  walletId: string;
+  name: string;
+  description: string;
+  framework: "langchain" | "vercel-ai";
+  llmProvider: "openai" | "anthropic";
+  model: string;
+  systemPrompt: string;
+  tools?: string[];
+}
+
+export interface AgentExecution {
+  outputs: { type: string; content: string; toolName?: string }[];
+}
+
+// ── DeFi ────────────────────────────────────────────────────────────────────
+
+export interface SwapQuote {
+  inputMint: string;
+  outputMint: string;
+  inputAmount: string;
+  outputAmount: string;
+  priceImpactPct: number;
+  fee: string;
+}
+
+export interface SwapParams {
+  walletId: string;
+  protocol: string;
+  inputMint: string;
+  outputMint: string;
+  amount: string;
+  slippageBps?: number;
+}
+
+export interface StakeParams {
+  walletId: string;
+  protocol: string;
+  amount: string;
+  validator?: string;
+}
+
+export interface PriceFeed {
+  symbol: string;
+  price: number;
+  confidence: number;
+  timestamp: number;
+}
+
+export interface DeFiProtocol {
+  name: string;
+  programIds: string[];
+  capabilities: string[];
+}
+
 // ── Client Config ───────────────────────────────────────────────────────────
 
 export interface SolAgentConfig {
@@ -130,6 +204,9 @@ export interface SolAgentConfig {
     walletEngine?: string;
     policyEngine?: string;
     transactionEngine?: string;
+    agentRuntime?: string;
+    defiIntegration?: string;
+    notification?: string;
   };
   apiKey?: string;
   timeout?: number;

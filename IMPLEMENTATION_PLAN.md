@@ -431,19 +431,19 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Task | PRD Ref | Status |
 |---|---|---|---|
-| 2.1.1 | Scaffold `agent-runtime-svc` Hono app | — | ⬜ |
-| 2.1.2 | Implement `AgentFramework` interface | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.3 | Implement LangChain adapter | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.4 | Implement Vercel AI SDK adapter | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
+| 2.1.1 | Scaffold `agent-runtime-svc` Hono app | — | ✅ |
+| 2.1.2 | Implement `AgentFramework` interface | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.3 | Implement LangChain adapter | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.4 | Implement Vercel AI SDK adapter | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 2.1.5 | Implement Eliza adapter | [FR-502](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.6 | Implement Tool Registry with dynamic registration | [FR-504](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.7 | Create built-in tools: `transfer`, `getBalance`, `swap` | [FR-504](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.8 | Implement agent state persistence (PostgreSQL + Redis) | [FR-505](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.9 | Implement agent lifecycle (create/start/pause/resume/stop/destroy) | [FR-507](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
+| 2.1.6 | Implement Tool Registry with dynamic registration | [FR-504](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.7 | Create built-in tools: `transfer`, `getBalance`, `swap` | [FR-504](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.8 | Implement agent state persistence (PostgreSQL + Redis) | [FR-505](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.9 | Implement agent lifecycle (create/start/pause/resume/stop/destroy) | [FR-507](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 2.1.10 | Implement sandboxed execution (V8 isolate or worker) | [FR-507](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.11 | Implement LLM provider abstraction (OpenAI, Anthropic) | [FR-501](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.1.12 | Write unit tests for each adapter | — | ⬜ |
-| 2.1.13 | Write integration tests: agent runs and executes tools | — | ⬜ |
+| 2.1.11 | Implement LLM provider abstraction (OpenAI, Anthropic) | [FR-501](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.1.12 | Write unit tests for each adapter | — | ✅ |
+| 2.1.13 | Write integration tests: agent runs and executes tools | — | ✅ |
 
 ---
 
@@ -457,17 +457,17 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Task | Protocol | PRD Ref | Status |
 |---|---|---|---|---|
-| 2.2.1 | Scaffold `defi-integration-svc` | — | — | ⬜ |
-| 2.2.2 | Implement `DeFiProtocolAdapter` interface | — | — | ⬜ |
-| 2.2.3 | Implement Jupiter swap adapter (quote + execute) | Jupiter | [FR-401](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.4 | Implement Raydium AMM adapter | Raydium | [FR-402](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.5 | Implement Orca Whirlpools adapter | Orca | [FR-402](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.6 | Implement Marinade staking adapter | Marinade | [FR-403](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.7 | Implement Solend lending adapter | Solend | [FR-404](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.8 | Implement Metaplex NFT adapter | Metaplex | [FR-405](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
+| 2.2.1 | Scaffold `defi-integration-svc` | — | — | ✅ |
+| 2.2.2 | Implement `DeFiProtocolAdapter` interface | — | — | ✅ |
+| 2.2.3 | Implement Jupiter swap adapter (quote + execute) | Jupiter | [FR-401](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.4 | Implement Raydium AMM adapter | Raydium | [FR-402](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.5 | Implement Orca Whirlpools adapter | Orca | [FR-402](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.6 | Implement Marinade staking adapter | Marinade | [FR-403](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.7 | Implement Solend lending adapter | Solend | [FR-404](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.8 | Implement Metaplex NFT adapter | Metaplex | [FR-405](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 2.2.9 | Implement SPL token transfer with auto-ATA | — | [FR-406](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.10 | Integrate Pyth price feeds | Pyth | [FR-407](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.2.11 | Write unit tests per adapter | — | — | ⬜ |
+| 2.2.10 | Integrate Pyth price feeds | Pyth | [FR-407](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.2.11 | Write unit tests per adapter | — | — | ✅ |
 | 2.2.12 | Write devnet integration tests | — | — | ⬜ |
 
 ---
@@ -482,13 +482,13 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Task | PRD Ref | Status |
 |---|---|---|---|
-| 2.3.1 | Scaffold `notification-svc` | — | ⬜ |
-| 2.3.2 | Implement Redpanda consumer for transaction events | [FR-601](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.3.3 | Implement WebSocket hub (Hono WebSocket upgrade) | [FR-603](file:///Users/mac/.gemини/antigravity/scratch/solana-agent/PRD.md) | ⬜ |
-| 2.3.4 | Implement webhook dispatcher with HMAC signing | [FR-604](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.3.5 | Implement alert router (PagerDuty, Slack) | [FR-604](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
+| 2.3.1 | Scaffold `notification-svc` | — | ✅ |
+| 2.3.2 | Implement Redpanda consumer for transaction events | [FR-601](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.3.3 | Implement WebSocket hub (Hono WebSocket upgrade) | [FR-603](file:///Users/mac/.gemини/antigravity/scratch/solana-agent/PRD.md) | ✅ |
+| 2.3.4 | Implement webhook dispatcher with HMAC signing | [FR-604](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
+| 2.3.5 | Implement alert router (PagerDuty, Slack) | [FR-604](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 2.3.6 | Implement audit event writer (ClickHouse + S3) | [FR-601](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
-| 2.3.7 | Write integration tests | — | ⬜ |
+| 2.3.7 | Write integration tests | — | ✅ |
 
 ---
 
@@ -502,14 +502,14 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Task | Page | Status |
 |---|---|---|---|
-| 2.4.1 | Initialize Next.js 15 app with shadcn/ui | — | ⬜ |
-| 2.4.2 | Implement authentication flow (API key login) | Settings | ⬜ |
-| 2.4.3 | Build system overview dashboard page | `/dashboard` | ⬜ |
-| 2.4.4 | Build agents list + create/pause/destroy page | `/dashboard/agents` | ⬜ |
-| 2.4.5 | Build agent detail page (config, logs, wallet) | `/dashboard/agents/:id` | ⬜ |
-| 2.4.6 | Build wallets list page with balances | `/dashboard/wallets` | ⬜ |
-| 2.4.7 | Build transaction log with filters/search | `/dashboard/transactions` | ⬜ |
-| 2.4.8 | Build policy management page | `/dashboard/policies` | ⬜ |
+| 2.4.1 | Initialize Next.js 15 app with shadcn/ui | — | ✅ |
+| 2.4.2 | Implement authentication flow (API key login) | Settings | ✅ |
+| 2.4.3 | Build system overview dashboard page | `/dashboard` | ✅ |
+| 2.4.4 | Build agents list + create/pause/destroy page | `/dashboard/agents` | ✅ |
+| 2.4.5 | Build agent detail page (config, logs, wallet) | `/dashboard/agents/:id` | ✅ |
+| 2.4.6 | Build wallets list page with balances | `/dashboard/wallets` | ✅ |
+| 2.4.7 | Build transaction log with filters/search | `/dashboard/transactions` | ✅ |
+| 2.4.8 | Build policy management page | `/dashboard/policies` | ✅ |
 | 2.4.9 | Embed Grafana panels for monitoring | `/dashboard/monitoring` | ⬜ |
 | 2.4.10 | Implement real-time updates via WebSocket | — | ⬜ |
 | 2.4.11 | Write E2E tests (Playwright) | — | ⬜ |
@@ -524,8 +524,8 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Task | Status |
 |---|---|---|
-| 2.5.1 | Add agent methods to SDK (`agent.create()`, `agent.pause()`, etc.) | ⬜ |
-| 2.5.2 | Add DeFi methods to SDK (`defi.swap()`, `defi.stake()`, etc.) | ⬜ |
+| 2.5.1 | Add agent methods to SDK (`agent.create()`, `agent.pause()`, etc.) | ✅ |
+| 2.5.2 | Add DeFi methods to SDK (`defi.swap()`, `defi.stake()`, etc.) | ✅ |
 | 2.5.3 | Add WebSocket event subscription to SDK | ⬜ |
 | 2.5.4 | Deploy OpenTelemetry Collector + Prometheus + Grafana | ⬜ |
 | 2.5.5 | Instrument all services with OTel SDK | ⬜ |
