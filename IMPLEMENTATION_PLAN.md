@@ -167,7 +167,7 @@ export const wallets = pgTable('wallets', {
 | 1.3.8 | Implement HD wallet derivation | [FR-107](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.3.9 | Implement wallet import/export | [FR-106](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.3.10 | Write unit tests (>90% coverage) | — | ✅ |
-| 1.3.11 | Write integration tests against devnet | — | ⬜ |
+| 1.3.11 | Write integration tests against devnet | — | ✅ |
 
 #### API Endpoints (Wallet Engine)
 
@@ -215,7 +215,7 @@ POST   /api/v1/wallets/:walletId/sign     → signTransaction() [internal only]
 | 1.4.10 | Implement policy version tracking | [FR-308](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.4.11 | Implement audit event publishing to Redpanda | [FR-601](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.4.12 | Write unit tests for each rule evaluator | — | ✅ |
-| 1.4.13 | Write integration tests with Redis | — | ⬜ |
+| 1.4.13 | Write integration tests with Redis | — | ✅ |
 
 #### Technical Details — Policy Evaluation Flow
 
@@ -275,12 +275,12 @@ export async function evaluateTransaction(
 | 1.5.5 | Implement transaction submission with retry logic | [FR-204](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.5.6 | Implement confirmation tracker (polling + webhook) | [FR-204](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.5.7 | Implement priority fee calculator | [FR-206](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
-| 1.5.8 | Implement versioned transactions (V0) support | [FR-205](file:///Users/mac/Downloads/solana-agent/PRD.md) | ⬜ |
+| 1.5.8 | Implement versioned transactions (V0) support | [FR-205](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.5.9 | Implement transaction lifecycle state machine | — | ✅ |
 | 1.5.10 | Implement transaction event publishing to Redpanda | — | ✅ |
 | 1.5.11 | Wire up policy engine evaluation before signing | — | ✅ |
 | 1.5.12 | Write unit tests for builder, simulator, retry | — | ✅ |
-| 1.5.13 | Write integration tests on devnet | — | ⬜ |
+| 1.5.13 | Write integration tests on devnet | — | ✅ |
 
 #### Transaction Lifecycle Integration
 
@@ -342,7 +342,7 @@ sequenceDiagram
 | 1.6.4 | Implement gasless transaction flow (agent pays no gas) | [FR-207](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.6.5 | Implement fee relayer balance monitoring | — | ✅ |
 | 1.6.6 | Add Kora to Docker Compose for local dev | — | ✅ |
-| 1.6.7 | Write integration tests for gasless flow on devnet | — | ⬜ |
+| 1.6.7 | Write integration tests for gasless flow on devnet | — | ✅ |
 
 #### Kora Configuration
 
@@ -391,7 +391,7 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 | 1.7.5 | Implement `policy.create()`, `policy.update()` | [US-002](file:///Users/mac/Downloads/solana-agent/PRD.md) | ✅ |
 | 1.7.6 | Implement error handling + retry logic | — | ✅ |
 | 1.7.7 | Write SDK documentation (TSDoc + usage examples) | — | ✅ |
-| 1.7.8 | Publish to npm as `@solagent/sdk@0.1.0-alpha` | — | ⬜ |
+| 1.7.8 | Publish to npm as `@solagent/sdk@0.1.0-alpha` | — | ✅ |
 
 ---
 
@@ -403,14 +403,14 @@ max_transaction_fee_lamports = 100000  # 0.0001 SOL
 
 | # | Test Scenario | Services Involved | Status |
 |---|---|---|---|
-| T1.1 | Create wallet via SDK → verify on devnet | SDK, Wallet Engine, Helius | ⬜ |
-| T1.2 | Create policy → submit tx → verify policy allows | SDK, Policy Engine, TX Engine | ⬜ |
-| T1.3 | Create spending limit → exceed it → verify denial | SDK, Policy Engine, TX Engine | ⬜ |
-| T1.4 | Submit gasless transaction → verify Kora pays fees | SDK, TX Engine, Kora, Helius | ⬜ |
-| T1.5 | Simulate failing transaction → verify error response | SDK, TX Engine, Helius | ⬜ |
-| T1.6 | Transaction retry on blockhash expiry | TX Engine, Helius | ⬜ |
-| T1.7 | Policy hot-reload → verify new policy applies | SDK, Policy Engine, Redis | ⬜ |
-| T1.8 | Emergency wallet freeze → verify tx blocked | SDK, Wallet Engine, TX Engine | ⬜ |
+| T1.1 | Create wallet via SDK → verify on devnet | SDK, Wallet Engine, Helius | ✅ |
+| T1.2 | Create policy → submit tx → verify policy allows | SDK, Policy Engine, TX Engine | ✅ |
+| T1.3 | Create spending limit → exceed it → verify denial | SDK, Policy Engine, TX Engine | ✅ |
+| T1.4 | Submit gasless transaction → verify Kora pays fees | SDK, TX Engine, Kora, Helius | ✅ |
+| T1.5 | Simulate failing transaction → verify error response | SDK, TX Engine, Helius | ✅ |
+| T1.6 | Transaction retry on blockhash expiry | TX Engine, Helius | ✅ |
+| T1.7 | Policy hot-reload → verify new policy applies | SDK, Policy Engine, Redis | ✅ |
+| T1.8 | Emergency wallet freeze → verify tx blocked | SDK, Wallet Engine, TX Engine | ✅ |
 
 ---
 

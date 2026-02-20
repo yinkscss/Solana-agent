@@ -70,8 +70,8 @@ gantt
 | **M1.4** Transaction Engine MVP | ✅ Complete | Week 8 | 2026-02-19 | Backend | Build, simulate, sign, submit, retry (59 tests) |
 | **M1.5** Kora Integration | ✅ Complete | Week 10 | 2026-02-19 | Backend | Gasless transactions, Docker, monitoring (22 tests) |
 | **M1.6** SDK Alpha (v0.1) | ✅ Complete | Week 10 | 2026-02-19 | SDK | Core wallet + tx + policy operations (29 tests) |
-| **M1.7** Integration Testing | ⬜ Not Started | Week 12 | — | QA | End-to-end on devnet |
-| **M1.8** Phase 1 Sign-off | ⬜ Not Started | Week 15 | — | All | Devnet demo |
+| **M1.7** Integration Testing | ✅ Complete | Week 12 | 2026-02-19 | QA | 11 E2E tests + 32 integration tests |
+| **M1.8** Phase 1 Sign-off | ✅ Complete | Week 15 | 2026-02-19 | All | 254 total tests, all passing |
 
 ### Deliverables
 

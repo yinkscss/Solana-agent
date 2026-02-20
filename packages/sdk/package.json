@@ -1,22 +1,63 @@
 {
   "name": "@solagent/sdk",
   "version": "0.1.0-alpha",
-  "private": true,
+  "description": "TypeScript SDK for SolAgent — non-custodial AI agent wallet platform for Solana",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
+  "keywords": [
+    "solana",
+    "agent",
+    "wallet",
+    "ai",
+    "blockchain",
+    "sdk",
+    "typescript",
+    "non-custodial",
+    "defi"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yinkscss/Solana-agent.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/yinkscss/Solana-agent#readme",
+  "bugs": {
+    "url": "https://github.com/yinkscss/Solana-agent/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {},
   "devDependencies": {
-    "tsup": "^8.0.0",
-    "vitest": "^2.0.0",
-    "typescript": "^5.5.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   }
 }

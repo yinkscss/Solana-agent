@@ -2,6 +2,10 @@ import type { TransactionStatus, TransactionType, PolicyDecision } from '@solage
 
 export type Urgency = 'low' | 'medium' | 'high';
 
+/**
+ * `metadata.versioned` — when `true`, builds a V0 VersionedTransaction instead of legacy.
+ * `metadata.lookupTables` — string[] of address lookup table pubkeys; implies versioned=true.
+ */
 export interface CreateTransactionParams {
   walletId: string;
   agentId?: string;

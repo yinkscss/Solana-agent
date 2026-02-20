@@ -41,6 +41,13 @@ const createMockDeps = (overrides?: Record<string, unknown>) => ({
     buildCustomTransaction: vi.fn(async () => ({
       serialize: () => Buffer.from('fake-serialized-tx'),
     })),
+    buildVersionedTransferTransaction: vi.fn(async () => ({
+      serialize: () => new Uint8Array([1, 2, 3]),
+    })),
+    buildVersionedCustomTransaction: vi.fn(async () => ({
+      serialize: () => new Uint8Array([1, 2, 3]),
+    })),
+    fetchAddressLookupTable: vi.fn(async () => null),
     getRecentBlockhash: vi.fn(async () => 'mock-blockhash'),
   },
   simulator: {

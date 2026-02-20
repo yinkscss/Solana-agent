@@ -1,13 +1,13 @@
-import { Connection, Transaction } from '@solana/web3.js';
+import { Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import type { SimulationResult } from '../types';
 
 export interface SimulatorService {
-  simulateTransaction: (transaction: Transaction) => Promise<SimulationResult>;
+  simulateTransaction: (transaction: Transaction | VersionedTransaction) => Promise<SimulationResult>;
 }
 
 export const createSimulatorService = (connection: Connection): SimulatorService => {
-  const simulateTransaction = async (transaction: Transaction): Promise<SimulationResult> => {
-    const response = await connection.simulateTransaction(transaction);
+  const simulateTransaction = async (transaction: Transaction | VersionedTransaction): Promise<SimulationResult> => {
+    const response = await connection.simulateTransaction(transaction as any);
     const { value } = response;
 
     if (value.err) {

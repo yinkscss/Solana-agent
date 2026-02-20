@@ -1,9 +1,12 @@
 import {
+  AddressLookupTableAccount,
   Connection,
   PublicKey,
   SystemProgram,
   Transaction,
   TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
 } from '@solana/web3.js';
 import {
   createTransferInstruction,
@@ -18,6 +21,9 @@ export interface BuilderService {
   buildTransferTransaction: (from: string, to: string, lamports: bigint, recentBlockhash?: string) => Promise<Transaction>;
   buildTokenTransferTransaction: (from: string, to: string, mint: string, amount: bigint, recentBlockhash?: string) => Promise<Transaction>;
   buildCustomTransaction: (instructions: TransactionInstruction[], feePayer: string, recentBlockhash?: string) => Promise<Transaction>;
+  buildVersionedTransferTransaction: (from: string, to: string, lamports: bigint, lookupTables?: AddressLookupTableAccount[], recentBlockhash?: string) => Promise<VersionedTransaction>;
+  buildVersionedCustomTransaction: (instructions: TransactionInstruction[], feePayer: string, lookupTables?: AddressLookupTableAccount[], recentBlockhash?: string) => Promise<VersionedTransaction>;
+  fetchAddressLookupTable: (address: string) => Promise<AddressLookupTableAccount | null>;
   getRecentBlockhash: () => Promise<string>;
 }
 
@@ -102,10 +108,64 @@ export const createBuilderService = (
     return tx;
   };
 
+  const buildVersionedTransferTransaction = async (
+    from: string,
+    to: string,
+    lamports: bigint,
+    lookupTables?: AddressLookupTableAccount[],
+    recentBlockhash?: string,
+  ): Promise<VersionedTransaction> => {
+    const blockhash = recentBlockhash ?? await getRecentBlockhash();
+    const fromPubkey = new PublicKey(from);
+
+    const instructions = [
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey: new PublicKey(to),
+        lamports,
+      }),
+    ];
+
+    const messageV0 = new TransactionMessage({
+      payerKey: fromPubkey,
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToV0Message(lookupTables ?? []);
+
+    return new VersionedTransaction(messageV0);
+  };
+
+  const buildVersionedCustomTransaction = async (
+    instructions: TransactionInstruction[],
+    feePayer: string,
+    lookupTables?: AddressLookupTableAccount[],
+    recentBlockhash?: string,
+  ): Promise<VersionedTransaction> => {
+    const blockhash = recentBlockhash ?? await getRecentBlockhash();
+
+    const messageV0 = new TransactionMessage({
+      payerKey: new PublicKey(feePayer),
+      recentBlockhash: blockhash,
+      instructions,
+    }).compileToV0Message(lookupTables ?? []);
+
+    return new VersionedTransaction(messageV0);
+  };
+
+  const fetchAddressLookupTable = async (
+    address: string,
+  ): Promise<AddressLookupTableAccount | null> => {
+    const result = await connection.getAddressLookupTable(new PublicKey(address));
+    return result.value;
+  };
+
   return {
     buildTransferTransaction,
     buildTokenTransferTransaction,
     buildCustomTransaction,
+    buildVersionedTransferTransaction,
+    buildVersionedCustomTransaction,
+    fetchAddressLookupTable,
     getRecentBlockhash,
   };
 };

@@ -1,5 +1,6 @@
 import type { TransactionStatus } from '@solagent/common';
 import type { EventPublisher, TransactionEvent } from '@solagent/events';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
 import type { BuilderService } from './builder.service';
 import type { SimulatorService } from './simulator.service';
 import type { SignerService } from './signer.service';
@@ -153,7 +154,7 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
 
     record = await updateStatus(record, 'signing');
 
-    const txBase64 = Buffer.from(tx.serialize({ requireAllSignatures: false })).toString('base64');
+    const txBase64 = serializeTransaction(tx).toString('base64');
     let signedTxBase64: string;
     try {
       signedTxBase64 = await signer.signTransaction(params.walletId, txBase64);
@@ -213,7 +214,7 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
 
   const executeRetry = async (record: TransactionRecord, params: CreateTransactionParams): Promise<TransactionRecord> => {
     const tx = await buildTransactionFromParams(params);
-    const txBase64 = Buffer.from(tx.serialize({ requireAllSignatures: false })).toString('base64');
+    const txBase64 = serializeTransaction(tx).toString('base64');
     const signedTxBase64 = await signer.signTransaction(params.walletId, txBase64);
 
     record = await updateStatus(record, 'submitting');
@@ -249,7 +250,48 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
     });
   };
 
-  const buildTransactionFromParams = async (params: CreateTransactionParams) => {
+  const resolveVersionedFlag = (params: CreateTransactionParams): boolean => {
+    const meta = params.metadata ?? {};
+    return meta.versioned === true || Array.isArray(meta.lookupTables);
+  };
+
+  const resolveLookupTables = async (params: CreateTransactionParams) => {
+    const addresses = params.metadata?.lookupTables as string[] | undefined;
+    if (!addresses?.length) return [];
+
+    const results = await Promise.all(
+      addresses.map((addr) => builder.fetchAddressLookupTable(addr)),
+    );
+    return results.filter((t): t is NonNullable<typeof t> => t !== null);
+  };
+
+  const serializeTransaction = (tx: Transaction | VersionedTransaction): Buffer => {
+    if (tx instanceof VersionedTransaction) {
+      return Buffer.from(tx.serialize());
+    }
+    return Buffer.from(tx.serialize({ requireAllSignatures: false }));
+  };
+
+  const buildTransactionFromParams = async (
+    params: CreateTransactionParams,
+  ): Promise<Transaction | VersionedTransaction> => {
+    const useVersioned = resolveVersionedFlag(params);
+
+    if (useVersioned) {
+      const lookupTables = await resolveLookupTables(params);
+
+      if (params.type === 'transfer' && params.destination && params.amount) {
+        return builder.buildVersionedTransferTransaction(
+          params.walletId,
+          params.destination,
+          BigInt(params.amount),
+          lookupTables,
+        );
+      }
+
+      return builder.buildVersionedCustomTransaction([], params.walletId, lookupTables);
+    }
+
     if (params.type === 'transfer' && params.destination && params.amount) {
       if (params.tokenMint) {
         return builder.buildTokenTransferTransaction(
