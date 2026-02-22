@@ -1,4 +1,5 @@
 import type { Context } from 'hono';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
 import type { WalletService } from '../services/wallet.service';
 import type { BalanceService } from '../services/balance.service';
 import type { CreateWalletBody, SignTransactionBody } from '../types';
@@ -57,9 +58,22 @@ export const createWalletController = (
     const { walletId } = c.req.param();
     const body = c.get('validatedBody') as SignTransactionBody;
     const txBytes = Buffer.from(body.transaction, 'base64');
-    const signature = await walletService.signTransaction(walletId!, txBytes);
+    const signedTxBytes = await walletService.signTransaction(walletId!, txBytes);
+
+    let detachedSig: Uint8Array;
+    try {
+      const vtx = VersionedTransaction.deserialize(signedTxBytes);
+      detachedSig = vtx.signatures[0];
+    } catch {
+      const tx = Transaction.from(signedTxBytes);
+      detachedSig = tx.signature!;
+    }
+
     return c.json({
-      data: { signature: Buffer.from(signature).toString('base64') },
+      data: {
+        signature: Buffer.from(detachedSig).toString('base64'),
+        signedTransaction: Buffer.from(signedTxBytes).toString('base64'),
+      },
     });
   };
 

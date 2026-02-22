@@ -1,4 +1,4 @@
-import { Keypair } from '@solana/web3.js';
+import { Keypair, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { nanoid } from 'nanoid';
 import { sign } from 'tweetnacl';
 import type { CreateWalletOpts, KeyProvider, WalletRef } from './key-provider.interface';
@@ -31,7 +31,16 @@ export class LocalProvider implements KeyProvider {
     transaction: Uint8Array,
   ): Promise<Uint8Array> => {
     const keypair = this.resolveKeypair(walletRef);
-    return sign.detached(transaction, keypair.secretKey);
+
+    try {
+      const vtx = VersionedTransaction.deserialize(transaction);
+      vtx.sign([keypair]);
+      return vtx.serialize();
+    } catch {
+      const tx = Transaction.from(transaction);
+      tx.partialSign(keypair);
+      return tx.serialize();
+    }
   };
 
   signMessage = async (

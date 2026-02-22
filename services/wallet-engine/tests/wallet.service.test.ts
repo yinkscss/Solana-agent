@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { createWalletService, type WalletRepository } from '../src/services/wallet.service';
 import type { WalletRecord } from '../src/types';
 import { WalletNotFoundError, WalletFrozenError } from '../src/types';
@@ -145,13 +146,24 @@ describe('WalletService', () => {
   });
 
   describe('signTransaction', () => {
-    it('should sign with the correct provider', async () => {
+    it('should return a fully signed transaction', async () => {
       const created = await service.createWallet('agent-1', 'local', 'Sign Test', 'devnet');
-      const txBytes = new Uint8Array([1, 2, 3, 4]);
+      const feePayer = new PublicKey(created.publicKey);
+      const tx = new Transaction({
+        recentBlockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        feePayer,
+      });
+      tx.add(
+        SystemProgram.transfer({ fromPubkey: feePayer, toPubkey: feePayer, lamports: 1000n }),
+      );
+      const txBytes = tx.serialize({ requireAllSignatures: false });
 
-      const signature = await service.signTransaction(created.id, txBytes);
-      expect(signature).toBeInstanceOf(Uint8Array);
-      expect(signature.length).toBe(64);
+      const signedBytes = await service.signTransaction(created.id, txBytes);
+      expect(signedBytes).toBeInstanceOf(Uint8Array);
+      expect(signedBytes.length).toBeGreaterThan(64);
+
+      const signedTx = Transaction.from(signedBytes);
+      expect(signedTx.signature).not.toBeNull();
     });
 
     it('should refuse to sign with a frozen wallet', async () => {

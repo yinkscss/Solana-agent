@@ -41,7 +41,7 @@ describe('Jupiter Adapter', () => {
 
     expect(fetchSpy).toHaveBeenCalledOnce();
     const calledUrl = new URL(fetchSpy.mock.calls[0]![0] as string);
-    expect(calledUrl.pathname).toBe('/quote');
+    expect(calledUrl.pathname).toBe('/v6/quote');
     expect(calledUrl.searchParams.get('inputMint')).toBe('So11111111111111111111111111111111111111112');
     expect(calledUrl.searchParams.get('amount')).toBe('1000000000');
     expect(calledUrl.searchParams.get('slippageBps')).toBe('100');
@@ -68,6 +68,7 @@ describe('Jupiter Adapter', () => {
     });
 
     const calledUrl = new URL(fetchSpy.mock.calls[0]![0] as string);
+    expect(calledUrl.pathname).toBe('/v6/quote');
     expect(calledUrl.searchParams.get('slippageBps')).toBe('50');
   });
 
@@ -102,9 +103,16 @@ describe('Jupiter Adapter', () => {
         outputAmount: '23450000',
         priceImpactPct: 0.12,
         fee: '8000',
-        route: mockQuoteResponse.routePlan,
+        route: mockQuoteResponse,
       },
     });
+
+    const fetchCall = vi.mocked(fetch).mock.calls[0]!;
+    expect(fetchCall[0]).toBe(`${API_URL}/swap`);
+    const sentBody = JSON.parse(fetchCall[1]!.body as string);
+    expect(sentBody.quoteResponse).toEqual(mockQuoteResponse);
+    expect(sentBody.userPublicKey).toBe('WaLLet111111111111111111111111111111111111');
+    expect(sentBody.wrapAndUnwrapSol).toBe(true);
 
     expect(instructions).toHaveLength(1);
     expect(instructions[0]!.programId).toBe('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4');

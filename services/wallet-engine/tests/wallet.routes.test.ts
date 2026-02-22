@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
+import { Keypair, SystemProgram, Transaction } from '@solana/web3.js';
 import { createWalletRoutes, createAgentWalletRoutes } from '../src/routes/wallets';
 import { createWalletController } from '../src/controllers/wallet.controller';
 import { errorHandler } from '../src/middleware/error-handler';
@@ -20,6 +21,17 @@ const mockWallet: WalletRecord = {
   updatedAt: new Date('2025-01-01'),
 };
 
+const mockSignedTxBytes = (() => {
+  const kp = Keypair.generate();
+  const tx = new Transaction({
+    recentBlockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+    feePayer: kp.publicKey,
+  });
+  tx.add(SystemProgram.transfer({ fromPubkey: kp.publicKey, toPubkey: kp.publicKey, lamports: 1000n }));
+  tx.sign(kp);
+  return new Uint8Array(tx.serialize());
+})();
+
 const createMockWalletService = (): WalletService =>
   ({
     createWallet: vi.fn(async () => mockWallet),
@@ -27,7 +39,7 @@ const createMockWalletService = (): WalletService =>
     getWalletsByAgent: vi.fn(async () => [mockWallet]),
     deactivateWallet: vi.fn(async () => ({ ...mockWallet, status: 'frozen' as const })),
     recoverWallet: vi.fn(async () => ({ ...mockWallet, status: 'recovering' as const })),
-    signTransaction: vi.fn(async () => new Uint8Array([1, 2, 3])),
+    signTransaction: vi.fn(async () => mockSignedTxBytes),
   }) as any;
 
 const createMockBalanceService = (): BalanceService =>
@@ -153,7 +165,7 @@ describe('Wallet Routes', () => {
   });
 
   describe('POST /api/v1/wallets/:walletId/sign', () => {
-    it('should sign a transaction', async () => {
+    it('should sign a transaction and return both signature and signedTransaction', async () => {
       const res = await app.request('/api/v1/wallets/wallet-1/sign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,6 +177,10 @@ describe('Wallet Routes', () => {
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.data.signature).toBeTruthy();
+      expect(json.data.signedTransaction).toBeTruthy();
+
+      const sigBuffer = Buffer.from(json.data.signature, 'base64');
+      expect(sigBuffer.length).toBe(64);
     });
   });
 

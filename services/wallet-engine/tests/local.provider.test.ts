@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { LocalProvider } from '../src/providers/local.provider';
 import type { WalletRef } from '../src/providers/key-provider.interface';
 import { sign } from 'tweetnacl';
@@ -56,31 +57,53 @@ describe('LocalProvider', () => {
   });
 
   describe('signTransaction', () => {
-    it('should produce a valid Ed25519 signature', async () => {
+    const buildUnsignedTx = (feePayer: PublicKey): Uint8Array => {
+      const tx = new Transaction({
+        recentBlockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        feePayer,
+      });
+      tx.add(
+        SystemProgram.transfer({
+          fromPubkey: feePayer,
+          toPubkey: feePayer,
+          lamports: 1000n,
+        }),
+      );
+      return tx.serialize({ requireAllSignatures: false });
+    };
+
+    it('should return a fully signed transaction (not a detached signature)', async () => {
       const wallet = await provider.createWallet({
         label: 'signer',
         network: 'devnet',
       });
 
-      const message = new Uint8Array([1, 2, 3, 4, 5]);
-      const signature = await provider.signTransaction(wallet, message);
+      const unsigned = buildUnsignedTx(new PublicKey(wallet.publicKey));
+      const result = await provider.signTransaction(wallet, unsigned);
 
-      expect(signature).toBeInstanceOf(Uint8Array);
-      expect(signature.length).toBe(64);
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(result.length).toBeGreaterThan(64);
+
+      const signedTx = Transaction.from(result);
+      expect(signedTx.signature).not.toBeNull();
     });
 
-    it('should produce a verifiable signature', async () => {
+    it('should produce a verifiable signature inside the signed transaction', async () => {
       const wallet = await provider.createWallet({
         label: 'verify-test',
         network: 'devnet',
       });
 
-      const message = new Uint8Array([10, 20, 30]);
-      const sig = await provider.signTransaction(wallet, message);
-      const secretKey = await provider.exportWallet!(wallet);
+      const feePayer = new PublicKey(wallet.publicKey);
+      const unsigned = buildUnsignedTx(feePayer);
+      const result = await provider.signTransaction(wallet, unsigned);
 
-      const publicKeyBytes = secretKey.slice(32);
-      const valid = sign.detached.verify(message, sig, publicKeyBytes);
+      const signedTx = Transaction.from(result);
+      const sig = signedTx.signature!;
+      expect(sig.length).toBe(64);
+
+      const message = signedTx.serializeMessage();
+      const valid = sign.detached.verify(message, sig, feePayer.toBytes());
       expect(valid).toBe(true);
     });
   });

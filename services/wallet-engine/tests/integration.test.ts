@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import { createApp } from '../src/app';
 
 vi.mock('../src/config/env', () => ({
@@ -140,7 +141,7 @@ describe('Wallet Engine Integration', () => {
   });
 
   describe('sign transaction flow', () => {
-    it('creates a wallet then signs a base64 transaction', async () => {
+    it('creates a wallet then signs a real transaction, returning both fields', async () => {
       const createRes = await app.request('/api/v1/wallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,21 +154,36 @@ describe('Wallet Engine Integration', () => {
       expect(createRes.status).toBe(201);
       const { data: wallet } = await createRes.json();
 
-      const txBytes = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]);
+      const feePayer = new PublicKey(wallet.publicKey);
+      const tx = new Transaction({
+        recentBlockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        feePayer,
+      });
+      tx.add(
+        SystemProgram.transfer({ fromPubkey: feePayer, toPubkey: feePayer, lamports: 1000n }),
+      );
+      const serialized = tx.serialize({ requireAllSignatures: false });
+
       const signRes = await app.request(`/api/v1/wallets/${wallet.id}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transaction: txBytes.toString('base64'),
+          transaction: Buffer.from(serialized).toString('base64'),
         }),
       });
 
       expect(signRes.status).toBe(200);
       const { data: signed } = await signRes.json();
       expect(signed.signature).toBeTruthy();
+      expect(signed.signedTransaction).toBeTruthy();
 
       const sigBuffer = Buffer.from(signed.signature, 'base64');
       expect(sigBuffer.length).toBe(64);
+
+      const signedTx = Transaction.from(
+        Buffer.from(signed.signedTransaction, 'base64'),
+      );
+      expect(signedTx.signature).not.toBeNull();
     });
 
     it('refuses to sign with a frozen wallet', async () => {
@@ -184,11 +200,21 @@ describe('Wallet Engine Integration', () => {
 
       await app.request(`/api/v1/wallets/${wallet.id}`, { method: 'DELETE' });
 
+      const feePayer = new PublicKey(wallet.publicKey);
+      const tx = new Transaction({
+        recentBlockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        feePayer,
+      });
+      tx.add(
+        SystemProgram.transfer({ fromPubkey: feePayer, toPubkey: feePayer, lamports: 1000n }),
+      );
+      const serialized = tx.serialize({ requireAllSignatures: false });
+
       const signRes = await app.request(`/api/v1/wallets/${wallet.id}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transaction: Buffer.from([1, 2, 3]).toString('base64'),
+          transaction: Buffer.from(serialized).toString('base64'),
         }),
       });
 

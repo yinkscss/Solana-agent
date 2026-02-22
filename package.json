@@ -15,9 +15,14 @@
     "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
     "test:e2e": "vitest run --config tests/vitest.config.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "devnet:smoke": "bun run scripts/devnet-smoke-test.ts",
+    "devnet:multi-agent": "bun run scripts/devnet-multi-agent.ts",
+    "devnet:jupiter": "bun run scripts/test-jupiter-live.ts"
   },
   "devDependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "@types/bun": "^1.3.9",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

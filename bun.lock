@@ -5,6 +5,8 @@
     "": {
       "name": "solagent",
       "devDependencies": {
+        "@solana/spl-token": "^0.4.14",
+        "@solana/web3.js": "^1.98.4",
         "@types/bun": "^1.3.9",
         "@typescript-eslint/eslint-plugin": "^8.0.0",
         "@typescript-eslint/parser": "^8.0.0",

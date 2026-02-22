@@ -37,7 +37,7 @@ export const createJupiterAdapter = (apiUrl: string): DeFiProtocolAdapter => ({
   programIds: ['JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'],
 
   async getSwapQuote(params: SwapQuoteParams): Promise<SwapQuote> {
-    const url = new URL('/quote', apiUrl);
+    const url = new URL(`${apiUrl}/quote`);
     url.searchParams.set('inputMint', params.inputMint);
     url.searchParams.set('outputMint', params.outputMint);
     url.searchParams.set('amount', params.amount);
@@ -62,7 +62,7 @@ export const createJupiterAdapter = (apiUrl: string): DeFiProtocolAdapter => ({
       outputAmount: data.outAmount,
       priceImpactPct: parseFloat(data.priceImpactPct),
       fee: String(totalFees),
-      route: data.routePlan,
+      route: data,
     };
   },
 

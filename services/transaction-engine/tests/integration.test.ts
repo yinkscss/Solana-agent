@@ -8,6 +8,7 @@ import type { TransactionRecord, TransactionListOptions } from '../src/types';
 import type { TransactionStatus } from '@solagent/common';
 
 const MOCK_WALLET_ID = '00000000-0000-0000-0000-000000000001';
+const MOCK_PUBLIC_KEY = 'HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH';
 const MOCK_DEST = '4fYNw3dojWmQ4dXtSGE9epjRGy9pFSx62YypT7avPYvA';
 const MOCK_SIGNATURE = '5UfDuX7WXYjABmLELhx2GR1NMRQYUMSbWL3JRPdVqvXbGYy5bUPWKSDAzrLBTKbc4kYk3d6sqFVpN8RaFfyDJqU';
 const FAKE_SERIALIZED = Buffer.from('fake-serialized-tx').toString('base64');
@@ -82,6 +83,9 @@ const createMockDeps = (overrides?: Partial<Record<string, unknown>>) => ({
   },
   priorityFee: {
     calculatePriorityFee: vi.fn(async () => 0),
+  },
+  walletResolver: {
+    getPublicKey: vi.fn(async () => MOCK_PUBLIC_KEY),
   },
   maxRetries: 3,
   ...overrides,

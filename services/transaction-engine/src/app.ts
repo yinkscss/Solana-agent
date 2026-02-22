@@ -12,6 +12,8 @@ import { createPolicyClientService } from './services/policy-client.service';
 import { createSubmitterService } from './services/submitter.service';
 import { createConfirmationService } from './services/confirmation.service';
 import { createPriorityFeeService } from './services/priority-fee.service';
+import { createWalletResolverService } from './services/wallet-resolver.service';
+import type { WalletResolverService } from './services/wallet-resolver.service';
 import { createTransactionService } from './services/transaction.service';
 import type { TransactionRepository } from './services/transaction.service';
 import { createTransactionController } from './controllers/transaction.controller';
@@ -62,6 +64,7 @@ export const createApp = (deps?: {
   repo?: TransactionRepository;
   redis?: Redis;
   connection?: Connection;
+  walletResolver?: WalletResolverService;
 }) => {
   const repo = deps?.repo ?? createInMemoryRepo();
   const redis = deps?.redis ?? new Redis(env.REDIS_URL, { lazyConnect: true });
@@ -74,6 +77,7 @@ export const createApp = (deps?: {
   const submitterService = createSubmitterService(connection, env.KORA_URL, env.MAX_RETRIES);
   const confirmationService = createConfirmationService(connection, env.CONFIRMATION_TIMEOUT_MS);
   const priorityFeeService = createPriorityFeeService(connection, redis);
+  const walletResolverService = deps?.walletResolver ?? createWalletResolverService(env.WALLET_ENGINE_URL);
 
   const transactionService = createTransactionService({
     repo,
@@ -84,6 +88,7 @@ export const createApp = (deps?: {
     submitter: submitterService,
     confirmation: confirmationService,
     priorityFee: priorityFeeService,
+    walletResolver: walletResolverService,
     maxRetries: env.MAX_RETRIES,
   });
 

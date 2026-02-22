@@ -8,6 +8,7 @@ import type { PolicyClientService } from './policy-client.service';
 import type { SubmitterService } from './submitter.service';
 import type { ConfirmationService } from './confirmation.service';
 import type { PriorityFeeService } from './priority-fee.service';
+import type { WalletResolverService } from './wallet-resolver.service';
 import { transition } from '../state-machine/transaction-state';
 import type {
   CreateTransactionParams,
@@ -39,6 +40,7 @@ interface TransactionDeps {
   submitter: SubmitterService;
   confirmation: ConfirmationService;
   priorityFee: PriorityFeeService;
+  walletResolver: WalletResolverService;
   publisher?: EventPublisher;
   maxRetries: number;
 }
@@ -65,6 +67,7 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
     submitter,
     confirmation,
     priorityFee,
+    walletResolver,
     publisher,
     maxRetries,
   } = deps;
@@ -275,6 +278,7 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
   const buildTransactionFromParams = async (
     params: CreateTransactionParams,
   ): Promise<Transaction | VersionedTransaction> => {
+    const publicKey = await walletResolver.getPublicKey(params.walletId);
     const useVersioned = resolveVersionedFlag(params);
 
     if (useVersioned) {
@@ -282,33 +286,33 @@ export const createTransactionService = (deps: TransactionDeps): TransactionServ
 
       if (params.type === 'transfer' && params.destination && params.amount) {
         return builder.buildVersionedTransferTransaction(
-          params.walletId,
+          publicKey,
           params.destination,
           BigInt(params.amount),
           lookupTables,
         );
       }
 
-      return builder.buildVersionedCustomTransaction([], params.walletId, lookupTables);
+      return builder.buildVersionedCustomTransaction([], publicKey, lookupTables);
     }
 
     if (params.type === 'transfer' && params.destination && params.amount) {
       if (params.tokenMint) {
         return builder.buildTokenTransferTransaction(
-          params.walletId,
+          publicKey,
           params.destination,
           params.tokenMint,
           BigInt(params.amount),
         );
       }
       return builder.buildTransferTransaction(
-        params.walletId,
+        publicKey,
         params.destination,
         BigInt(params.amount),
       );
     }
 
-    return builder.buildCustomTransaction([], params.walletId);
+    return builder.buildCustomTransaction([], publicKey);
   };
 
   const getTransaction = async (txId: string): Promise<TransactionRecord> => {

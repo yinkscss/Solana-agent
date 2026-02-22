@@ -78,6 +78,9 @@ const createMockDeps = (overrides?: Record<string, unknown>) => ({
   priorityFee: {
     calculatePriorityFee: vi.fn(async () => 5000),
   },
+  walletResolver: {
+    getPublicKey: vi.fn(async () => MOCK_WALLET_ID),
+  },
   maxRetries: 3,
   ...overrides,
 });

@@ -32,8 +32,8 @@ export const createSignerService = (walletEngineUrl: string): SignerService => {
       throw new SigningFailedError(message);
     }
 
-    const json = (await response.json()) as { data: { signature: string } };
-    return json.data.signature;
+    const json = (await response.json()) as { data: { signedTransaction: string } };
+    return json.data.signedTransaction;
   };
 
   return { signTransaction };
