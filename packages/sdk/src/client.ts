@@ -4,6 +4,7 @@ import { PolicyModule } from "./modules/policy.module.js";
 import { TransactionModule } from "./modules/transaction.module.js";
 import { AgentModule } from "./modules/agent.module.js";
 import { DeFiModule } from "./modules/defi.module.js";
+import { EventsModule } from "./modules/events.module.js";
 import type { SolAgentConfig } from "./types/index.js";
 
 const DEFAULT_TIMEOUT = 30_000;
@@ -15,6 +16,7 @@ const DEFAULTS = {
   transactionEngine: "http://localhost:3004",
   agentRuntime: "http://localhost:3001",
   defiIntegration: "http://localhost:3005",
+  notification: "ws://localhost:3006",
 } as const;
 
 const buildHttpClient = (
@@ -40,6 +42,7 @@ export class SolAgentClient {
   readonly transactions: TransactionModule;
   readonly agents: AgentModule;
   readonly defi: DeFiModule;
+  readonly events: EventsModule;
 
   constructor(config: SolAgentConfig) {
     this.wallets = new WalletModule(
@@ -56,6 +59,10 @@ export class SolAgentClient {
     );
     this.defi = new DeFiModule(
       buildHttpClient(resolveUrl(config, "defiIntegration"), config),
+    );
+    this.events = new EventsModule(
+      resolveUrl(config, "notification"),
+      config.orgId ?? "default",
     );
   }
 

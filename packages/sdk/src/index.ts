@@ -5,6 +5,8 @@ export { PolicyModule } from "./modules/policy.module.js";
 export { TransactionModule } from "./modules/transaction.module.js";
 export { AgentModule } from "./modules/agent.module.js";
 export { DeFiModule } from "./modules/defi.module.js";
+export { EventsModule } from "./modules/events.module.js";
+export type { EventPayload, EventHandler } from "./modules/events.module.js";
 
 export {
   SolAgentSDKError,

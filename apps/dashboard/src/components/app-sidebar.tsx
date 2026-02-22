@@ -11,6 +11,7 @@ import {
   Settings,
   Hexagon,
   LogOut,
+  Activity,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Wallets", href: "/dashboard/wallets", icon: Wallet },
   { title: "Transactions", href: "/dashboard/transactions", icon: ArrowLeftRight },
   { title: "Policies", href: "/dashboard/policies", icon: Shield },
+  { title: "Monitoring", href: "/dashboard/monitoring", icon: Activity },
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 

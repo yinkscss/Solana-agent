@@ -209,6 +209,7 @@ export interface SolAgentConfig {
     notification?: string;
   };
   apiKey?: string;
+  orgId?: string;
   timeout?: number;
   retries?: number;
 }

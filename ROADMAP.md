@@ -116,8 +116,8 @@ gantt
 | **M2.5** Notification Service | ✅ Complete | Week 18 | 2026-02-19 | Backend | WebSocket + webhooks (50 tests) |
 | **M2.6** Dashboard MVP | ✅ Complete | Week 22 | 2026-02-19 | Frontend | Next.js 15 + shadcn/ui, 11 routes |
 | **M2.7** SDK Beta (v0.5) | ✅ Complete | Week 22 | 2026-02-19 | SDK | + Agent + DeFi modules (29 tests) |
-| **M2.8** Mainnet-Beta Prep | ⬜ Not Started | Week 24 | — | Infra | Security audit, load test |
-| **M2.9** Phase 2 Sign-off | ⬜ Not Started | Week 26 | — | All | Mainnet soft launch |
+| **M2.8** Mainnet-Beta Prep | ✅ Complete | Week 24 | 2026-02-19 | Infra | OTel + Prometheus + Grafana, k6 load tests, API Gateway, security hardening |
+| **M2.9** Phase 2 Sign-off | ✅ Complete | Week 26 | 2026-02-19 | All | All Phase 2 tasks complete, 450+ tests passing |
 
 ### Deliverables
 

@@ -1,0 +1,110 @@
+{
+  "uid": "solagent-transaction-metrics",
+  "title": "SolAgent — Transaction Metrics",
+  "tags": ["solagent", "transactions"],
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Transaction Lifecycle Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(tx_lifecycle_total) by (status)",
+          "legendFormat": "{{ status }}"
+        }
+      ],
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    },
+    {
+      "id": 2,
+      "title": "Transaction Rate (per type)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(tx_lifecycle_total[5m])) by (type)",
+          "legendFormat": "{{ type }}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops" }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    },
+    {
+      "id": 3,
+      "title": "Gasless vs Standard Ratio",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(tx_lifecycle_total) by (fee_mode)",
+          "legendFormat": "{{ fee_mode }}"
+        }
+      ],
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    },
+    {
+      "id": 4,
+      "title": "Average Confirmation Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(tx_confirmation_duration_seconds_sum[5m]) / rate(tx_confirmation_duration_seconds_count[5m])",
+          "legendFormat": "avg confirmation"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    },
+    {
+      "id": 5,
+      "title": "Retry Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(tx_lifecycle_total{status=\"retrying\"}[5m]))",
+          "legendFormat": "retries/s"
+        },
+        {
+          "expr": "sum(rate(tx_lifecycle_total{status=\"retrying\"}[5m])) / sum(rate(tx_lifecycle_total[5m]))",
+          "legendFormat": "retry ratio"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops" }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    },
+    {
+      "id": 6,
+      "title": "Transaction Signing Latency (P50 / P99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(tx_signing_duration_seconds_bucket[5m]))",
+          "legendFormat": "P50"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(tx_signing_duration_seconds_bucket[5m]))",
+          "legendFormat": "P99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

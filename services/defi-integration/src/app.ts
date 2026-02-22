@@ -11,6 +11,7 @@ import { createOrcaAdapter } from './adapters/orca.adapter';
 import { createMarinadeAdapter } from './adapters/marinade.adapter';
 import { createSolendAdapter } from './adapters/solend.adapter';
 import { createMetaplexAdapter } from './adapters/metaplex.adapter';
+import { createSPLTransferAdapter } from './adapters/spl-transfer.adapter';
 import { createPriceFeedService } from './services/price-feed.service';
 import { createDeFiService } from './services/defi.service';
 import { createDeFiController } from './controllers/defi.controller';
@@ -26,6 +27,7 @@ export const createApp = (deps?: { redis?: Redis }) => {
   registry.register(createMarinadeAdapter(env.SOLANA_RPC_URL));
   registry.register(createSolendAdapter(env.SOLANA_RPC_URL));
   registry.register(createMetaplexAdapter(env.SOLANA_RPC_URL));
+  registry.register(createSPLTransferAdapter(env.SOLANA_RPC_URL));
 
   const priceFeedService = createPriceFeedService(env.PYTH_API_URL, redis);
   const defiService = createDeFiService(registry, priceFeedService, env.TRANSACTION_ENGINE_URL);

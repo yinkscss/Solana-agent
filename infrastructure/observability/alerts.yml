@@ -1,0 +1,50 @@
+groups:
+  - name: solagent_slos
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 latency above 500ms on {{ $labels.job }}"
+
+      - alert: PolicyEvalLatency
+        expr: histogram_quantile(0.99, rate(policy_eval_duration_seconds_bucket[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Policy evaluation P99 > 10ms"
+
+      - alert: TransactionSigningLatency
+        expr: histogram_quantile(0.99, rate(tx_signing_duration_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Transaction signing P99 > 100ms"
+
+      - alert: KoraLowBalance
+        expr: kora_fee_payer_balance_sol < 0.5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kora fee payer balance critically low"
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is down"

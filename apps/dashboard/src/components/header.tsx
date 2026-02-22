@@ -3,6 +3,10 @@
 import { usePathname } from "next/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { LiveIndicator } from "@/components/live-indicator";
+import { useWebSocket } from "@/hooks/use-websocket";
+
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws";
 
 function getBreadcrumbs(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -16,12 +20,13 @@ function getBreadcrumbs(pathname: string) {
 export function Header() {
   const pathname = usePathname();
   const crumbs = getBreadcrumbs(pathname);
+  const { connected } = useWebSocket(WS_URL, "default");
 
   return (
     <header className="flex h-14 items-center gap-3 border-b border-border/50 bg-background/80 px-4 backdrop-blur-sm">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-1 h-5" />
-      <nav className="flex items-center gap-1 text-sm">
+      <nav className="flex flex-1 items-center gap-1 text-sm">
         {crumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-1">
             {i > 0 && (
@@ -39,6 +44,7 @@ export function Header() {
           </span>
         ))}
       </nav>
+      <LiveIndicator connected={connected} />
     </header>
   );
 }

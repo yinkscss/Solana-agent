@@ -59,5 +59,67 @@ services:
       timeout: 5s
       retries: 5
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+    volumes:
+      - ../observability/otel-collector.yml:/etc/otelcol-contrib/config.yaml
+    depends_on:
+      - prometheus
+      - loki
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../observability/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3100:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: solagent
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3200:3100"
+    volumes:
+      - loki_data:/loki
+
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3300:3200"
+      - "4320:4317"
+    command:
+      - '-config.file=/etc/tempo.yaml'
+    volumes:
+      - ../observability/tempo.yml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+
 volumes:
   pgdata:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:

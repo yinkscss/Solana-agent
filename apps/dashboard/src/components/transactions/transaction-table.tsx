@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -31,11 +31,16 @@ function truncateAddr(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
-export function TransactionTable() {
+interface TransactionTableProps {
+  lastWsEvent?: { type: string; data: unknown; timestamp: string } | null;
+}
+
+export function TransactionTable({ lastWsEvent }: TransactionTableProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const seenIdsRef = useRef(new Set<string>());
 
   useEffect(() => {
     const params: Record<string, string> = {};
@@ -44,10 +49,24 @@ export function TransactionTable() {
 
     api
       .listTransactions(params)
-      .then(setTransactions)
-      .catch(() => setTransactions(mockTransactions))
+      .then((txs) => {
+        txs.forEach((tx) => seenIdsRef.current.add(tx.id));
+        setTransactions(txs);
+      })
+      .catch(() => {
+        mockTransactions.forEach((tx) => seenIdsRef.current.add(tx.id));
+        setTransactions(mockTransactions);
+      })
       .finally(() => setLoading(false));
   }, [statusFilter, typeFilter]);
+
+  useEffect(() => {
+    if (!lastWsEvent || lastWsEvent.type !== "transaction") return;
+    const tx = lastWsEvent.data as Transaction;
+    if (!tx?.id || seenIdsRef.current.has(tx.id)) return;
+    seenIdsRef.current.add(tx.id);
+    setTransactions((prev) => [tx, ...prev]);
+  }, [lastWsEvent]);
 
   const filtered = transactions.filter((tx) => {
     if (statusFilter !== "all" && tx.status !== statusFilter) return false;
