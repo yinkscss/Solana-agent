@@ -43,21 +43,17 @@ services:
       - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
       - --advertise-schema-registry-addr internal://redpanda:8081,external://localhost:18081
 
-  # NOTE: Update image to the official Kora relayer image when available
-  kora:
-    image: nicholasgasior/kora:latest
-    ports:
-      - "8911:8911"
-    volumes:
-      - ../kora/kora.toml:/config/kora.toml
-      - ../kora/fee-payer.json:/config/fee-payer.json
-    depends_on:
-      - redpanda
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8911/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # Kora fee relayer — uncomment when official image is published:
+  # https://github.com/nicholasgasior/kora
+  # kora:
+  #   image: nicholasgasior/kora:latest
+  #   ports:
+  #     - "8911:8911"
+  #   volumes:
+  #     - ../kora/kora.toml:/config/kora.toml
+  #     - ../kora/fee-payer.json:/config/fee-payer.json
+  #   depends_on:
+  #     - redpanda
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest

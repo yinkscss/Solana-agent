@@ -3,6 +3,7 @@ dist
 .turbo
 .env
 .env.local
+.keys/
 coverage
 *.tsbuildinfo
 .DS_Store

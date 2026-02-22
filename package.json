@@ -17,6 +17,7 @@
     "test:e2e": "vitest run --config tests/vitest.config.ts",
     "prepare": "husky",
     "devnet:smoke": "bun run scripts/devnet-smoke-test.ts",
+    "devnet:agent": "bun run scripts/agent-live-test.ts",
     "devnet:multi-agent": "bun run scripts/devnet-multi-agent.ts",
     "devnet:jupiter": "bun run scripts/test-jupiter-live.ts"
   },
