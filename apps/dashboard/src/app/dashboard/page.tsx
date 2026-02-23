@@ -22,9 +22,10 @@ import {
   ReadOnlyToolBadge,
   type ToolCallInfo,
 } from '@/components/chat/confirmation-card';
+import { ChatMarkdown } from '@/components/chat/chat-markdown';
 import type { Agent } from '@/types';
 
-const ACTIONABLE_TOOLS = new Set(['transfer', 'swap', 'request_airdrop', 'create_wallet']);
+const ACTIONABLE_TOOLS = new Set(['transfer', 'swap', 'create_wallet']);
 
 interface ChatMessage {
   id: string;
@@ -123,6 +124,29 @@ function DashboardChat() {
     window.addEventListener('solagent-new-chat', handler);
     return () => window.removeEventListener('solagent-new-chat', handler);
   }, []);
+
+  const onboardingDone = useRef(false);
+  useEffect(() => {
+    if (onboardingDone.current || chatId || messages.length > 0) return;
+    if (!walletPublicKey || !selectedAgentId) return;
+
+    const hasHistory = localStorage.getItem('solagent-onboarded');
+    if (hasHistory) return;
+    onboardingDone.current = true;
+
+    const addr = walletPublicKey;
+    const truncated = `${addr.slice(0, 4)}...${addr.slice(-4)}`;
+    const faucetUrl = `https://faucet.solana.com/?address=${addr}&network=devnet`;
+
+    setMessages([
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: `Hey! Welcome to **SolAgent** — your AI assistant for Solana.\n\nI've set up a devnet wallet for you: \`${truncated}\`\n\nTo get started, grab some free test SOL:\n\n[Get free SOL from faucet](${faucetUrl})\n\nOnce you have SOL, you can ask me to:\n- **Check your balance**\n- **Send SOL** to any address\n- **Swap tokens** via Jupiter\n\nWhat would you like to do?`,
+      },
+    ]);
+    localStorage.setItem('solagent-onboarded', 'true');
+  }, [walletPublicKey, selectedAgentId, chatId, messages.length]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -367,7 +391,9 @@ function DashboardChat() {
                     </div>
                   ) : (
                     <div className="text-sm leading-relaxed text-foreground">
-                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                      <div className="prose-sm">
+                        <ChatMarkdown content={msg.content} />
+                      </div>
                       {msg.toolCalls && msg.toolCalls.length > 0 && (
                         <div className="mt-2 space-y-2">
                           {msg.toolCalls.map((tc, i) =>
