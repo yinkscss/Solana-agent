@@ -5,10 +5,10 @@ import { validateBody } from '../middleware/validation.js';
 
 const createAgentBodySchema = z.object({
   orgId: z.string().min(1),
-  walletId: z.string().min(1),
+  walletId: z.string().optional(),
   name: z.string().min(1).max(100),
   description: z.string().max(500).default(''),
-  framework: z.enum(['langchain', 'vercel-ai', 'eliza']).default('langchain'),
+  framework: z.enum(['solagent', 'vercel-ai', 'eliza']).default('solagent'),
   llmProvider: z.enum(['openai', 'anthropic']).default('openai'),
   model: z.string().min(1).default('gpt-4o'),
   systemPrompt: z.string().min(1),
@@ -19,12 +19,14 @@ const createAgentBodySchema = z.object({
 const executeBodySchema = z.object({
   message: z.string().min(1),
   conversationId: z.string().optional(),
+  walletId: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
 export const createAgentRoutes = (controller: AgentController): Hono => {
   const router = new Hono();
 
+  router.get('/', controller.listAll);
   router.post('/', validateBody(createAgentBodySchema), controller.create);
   router.get('/:agentId', controller.getById);
   router.put('/:agentId', controller.update);

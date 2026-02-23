@@ -1,22 +1,3 @@
-import type { Env } from '../config/env.js';
-
-export interface ServiceRoute {
-  prefix: string;
-  target: string;
-}
-
-export const buildServiceRoutes = (env: Env): ServiceRoute[] => [
-  { prefix: '/api/v1/agents', target: env.AGENT_RUNTIME_URL },
-  { prefix: '/api/v1/wallets', target: env.WALLET_ENGINE_URL },
-  { prefix: '/api/v1/policies', target: env.POLICY_ENGINE_URL },
-  { prefix: '/api/v1/evaluate', target: env.POLICY_ENGINE_URL },
-  { prefix: '/api/v1/transactions', target: env.TRANSACTION_ENGINE_URL },
-  { prefix: '/api/v1/defi', target: env.DEFI_ENGINE_URL },
-  { prefix: '/api/v1/webhooks', target: env.NOTIFICATION_URL },
-  { prefix: '/api/v1/alerts', target: env.NOTIFICATION_URL },
-  { prefix: '/ws', target: env.NOTIFICATION_URL },
-];
-
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 export const proxyRequest = async (
@@ -39,7 +20,6 @@ export const proxyRequest = async (
       headers,
       body: request.body,
       signal: controller.signal,
-      // @ts-expect-error -- Bun supports duplex streaming
       duplex: 'half',
     });
 
@@ -55,18 +35,11 @@ export const proxyRequest = async (
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    return new Response(
-      JSON.stringify({ error: 'Bad Gateway', detail: String(error) }),
-      { status: 502, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'Bad Gateway', detail: String(error) }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } finally {
     clearTimeout(timeout);
   }
-};
-
-export const resolveTarget = (
-  routes: ServiceRoute[],
-  path: string,
-): ServiceRoute | undefined => {
-  return routes.find((r) => path === r.prefix || path.startsWith(`${r.prefix}/`));
 };

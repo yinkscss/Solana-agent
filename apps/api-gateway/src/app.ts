@@ -5,14 +5,13 @@ import { corsMiddleware } from './middleware/cors.js';
 import { auth, parseApiKeys } from './middleware/auth.js';
 import { createRateLimiter } from './middleware/rate-limiter.js';
 import { createProxyRoutes } from './routes/proxy.js';
-import { buildServiceRoutes } from './services/proxy.service.js';
+import { createDashboardRoutes } from './routes/dashboard.js';
 
 export const createApp = (env: Env) => {
   const app = new Hono();
 
   const apiKeys = parseApiKeys(env.API_KEYS);
   const rateLimiter = createRateLimiter(env.RATE_LIMIT_RPM);
-  const serviceRoutes = buildServiceRoutes(env);
 
   app.use('*', requestId());
   app.use('*', corsMiddleware());
@@ -22,7 +21,8 @@ export const createApp = (env: Env) => {
   app.use('/api/*', auth(apiKeys));
   app.use('/api/*', rateLimiter.middleware);
 
-  app.route('/', createProxyRoutes(serviceRoutes));
+  app.route('/', createDashboardRoutes(env));
+  app.route('/', createProxyRoutes(env));
 
   app.notFound((c) => c.json({ error: 'Not Found' }, 404));
 

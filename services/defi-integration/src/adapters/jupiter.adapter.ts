@@ -3,7 +3,7 @@ import type {
   SwapQuoteParams,
   SwapQuote,
   SwapExecuteParams,
-  SerializedInstruction,
+  SwapTransactionResult,
 } from './adapter.interface';
 import { ExternalServiceError } from '../types';
 
@@ -20,17 +20,6 @@ interface JupiterQuoteResponse {
 interface JupiterSwapResponse {
   swapTransaction: string;
 }
-
-const parseSwapTransaction = (base64Tx: string): SerializedInstruction[] => {
-  const buffer = Buffer.from(base64Tx, 'base64');
-  return [
-    {
-      programId: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
-      keys: [],
-      data: buffer.toString('base64'),
-    },
-  ];
-};
 
 export const createJupiterAdapter = (apiUrl: string): DeFiProtocolAdapter => ({
   name: 'jupiter',
@@ -66,7 +55,7 @@ export const createJupiterAdapter = (apiUrl: string): DeFiProtocolAdapter => ({
     };
   },
 
-  async buildSwapInstructions(params: SwapExecuteParams): Promise<SerializedInstruction[]> {
+  async buildSwapTransaction(params: SwapExecuteParams): Promise<SwapTransactionResult> {
     const res = await fetch(`${apiUrl}/swap`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -83,6 +72,12 @@ export const createJupiterAdapter = (apiUrl: string): DeFiProtocolAdapter => ({
     }
 
     const data = (await res.json()) as JupiterSwapResponse;
-    return parseSwapTransaction(data.swapTransaction);
+
+    return {
+      transaction: data.swapTransaction,
+      inputAmount: params.quote.inputAmount,
+      outputAmount: params.quote.outputAmount,
+      priceImpactPct: params.quote.priceImpactPct,
+    };
   },
 });

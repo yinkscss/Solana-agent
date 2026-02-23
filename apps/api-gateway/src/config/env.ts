@@ -9,7 +9,7 @@ const envSchema = z.object({
   DEFI_ENGINE_URL: z.string().default('http://localhost:3005'),
   NOTIFICATION_URL: z.string().default('http://localhost:3006'),
   RATE_LIMIT_RPM: z.coerce.number().default(100),
-  API_KEYS: z.string().default('test-api-key:test-api-secret'),
+  API_KEYS: z.string().default('demo-key-123'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -5,6 +5,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default('redis://localhost:6379'),
   SOLANA_RPC_URL: z.string().default('https://api.devnet.solana.com'),
   TRANSACTION_ENGINE_URL: z.string().default('http://localhost:3004'),
+  WALLET_ENGINE_URL: z.string().default('http://localhost:3003'),
   JUPITER_API_URL: z.string().default('https://quote-api.jup.ag/v6'),
   PYTH_API_URL: z.string().default('https://hermes.pyth.network/v2'),
 });

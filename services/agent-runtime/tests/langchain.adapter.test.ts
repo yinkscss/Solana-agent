@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { z } from 'zod';
-import { LangChainAdapter } from '../src/framework/langchain.adapter';
+import { SolAgentAdapter } from '../src/framework/langchain.adapter';
 import type { LLMProvider, LLMResponse } from '../src/llm/provider.interface';
 import type { Tool } from '../src/tools/tool.interface';
 import type { AgentConfig, AgentState, ToolResult } from '../src/types';
@@ -10,7 +10,7 @@ const makeConfig = (overrides?: Partial<AgentConfig>): AgentConfig => ({
   name: 'Test Agent',
   description: 'test',
   walletId: 'wallet-1',
-  framework: 'langchain',
+  framework: 'solagent',
   llmProvider: 'openai',
   model: 'gpt-4o',
   systemPrompt: 'You are helpful.',
@@ -51,10 +51,13 @@ const makeMockTool = (): Tool => ({
   execute: vi.fn(async (): Promise<ToolResult> => ({ success: true, data: { balance: 2.5 } })),
 });
 
-describe('LangChainAdapter', () => {
+describe('SolAgentAdapter', () => {
   it('returns text response for simple query', async () => {
-    const adapter = new LangChainAdapter();
-    const mockProvider: LLMProvider = { name: 'mock', chat: vi.fn().mockResolvedValueOnce(textResponse) };
+    const adapter = new SolAgentAdapter();
+    const mockProvider: LLMProvider = {
+      name: 'mock',
+      chat: vi.fn().mockResolvedValueOnce(textResponse),
+    };
 
     await adapter.initialize(makeConfig(), mockProvider, []);
     const outputs = [];
@@ -68,11 +71,12 @@ describe('LangChainAdapter', () => {
   });
 
   it('executes tool call loop (Reason-Act-Observe)', async () => {
-    const adapter = new LangChainAdapter();
+    const adapter = new SolAgentAdapter();
     const tool = makeMockTool();
     const mockProvider: LLMProvider = {
       name: 'mock',
-      chat: vi.fn()
+      chat: vi
+        .fn()
         .mockResolvedValueOnce(toolCallResponse)
         .mockResolvedValueOnce(afterToolResponse),
     };
@@ -93,7 +97,7 @@ describe('LangChainAdapter', () => {
   });
 
   it('handles multiple sequential tool calls', async () => {
-    const adapter = new LangChainAdapter();
+    const adapter = new SolAgentAdapter();
     const tool = makeMockTool();
 
     const multiToolResponse: LLMResponse = {
@@ -108,7 +112,8 @@ describe('LangChainAdapter', () => {
 
     const mockProvider: LLMProvider = {
       name: 'mock',
-      chat: vi.fn()
+      chat: vi
+        .fn()
         .mockResolvedValueOnce(multiToolResponse)
         .mockResolvedValueOnce(afterToolResponse),
     };
@@ -125,7 +130,7 @@ describe('LangChainAdapter', () => {
   });
 
   it('handles missing tool gracefully', async () => {
-    const adapter = new LangChainAdapter();
+    const adapter = new SolAgentAdapter();
     const badToolCall: LLMResponse = {
       content: null,
       toolCalls: [{ id: 'tc_1', name: 'nonexistent', arguments: {} }],
@@ -135,9 +140,7 @@ describe('LangChainAdapter', () => {
 
     const mockProvider: LLMProvider = {
       name: 'mock',
-      chat: vi.fn()
-        .mockResolvedValueOnce(badToolCall)
-        .mockResolvedValueOnce(textResponse),
+      chat: vi.fn().mockResolvedValueOnce(badToolCall).mockResolvedValueOnce(textResponse),
     };
 
     await adapter.initialize(makeConfig(), mockProvider, []);
@@ -152,7 +155,7 @@ describe('LangChainAdapter', () => {
   });
 
   it('yields error when paused', async () => {
-    const adapter = new LangChainAdapter();
+    const adapter = new SolAgentAdapter();
     const mockProvider: LLMProvider = { name: 'mock', chat: vi.fn() };
 
     await adapter.initialize(makeConfig(), mockProvider, []);
@@ -169,8 +172,11 @@ describe('LangChainAdapter', () => {
   });
 
   it('resumes after pause', async () => {
-    const adapter = new LangChainAdapter();
-    const mockProvider: LLMProvider = { name: 'mock', chat: vi.fn().mockResolvedValue(textResponse) };
+    const adapter = new SolAgentAdapter();
+    const mockProvider: LLMProvider = {
+      name: 'mock',
+      chat: vi.fn().mockResolvedValue(textResponse),
+    };
 
     await adapter.initialize(makeConfig(), mockProvider, []);
     await adapter.pause();

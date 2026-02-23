@@ -19,6 +19,10 @@ const createMockRepo = (): AgentRepository => {
       return full;
     },
     findById: async (id) => store.get(id) ?? null,
+    findAll: async (_opts: ListOptions) => {
+      const all = [...store.values()];
+      return { data: all, total: all.length };
+    },
     findByOrgId: async (orgId, _opts: ListOptions) => {
       const all = [...store.values()].filter((a) => a.orgId === orgId);
       return { data: all, total: all.length };
@@ -93,7 +97,7 @@ describe('ExecutionService', () => {
       walletId: 'w1',
       name: 'Test Agent',
       description: 'test',
-      framework: 'langchain',
+      framework: 'solagent',
       llmProvider: 'openai',
       model: 'gpt-4o',
       systemPrompt: 'You are helpful.',
@@ -107,8 +111,12 @@ describe('ExecutionService', () => {
     const agent = await createRunningAgent();
     vi.mocked(mockProvider.chat).mockResolvedValueOnce(textResponse);
 
-    const outputs = await executionService.executeAgent(agent.id, { message: 'What is my balance?' });
-    expect(outputs.some((o) => o.type === 'text' && o.content === 'Your balance is 1.5 SOL')).toBe(true);
+    const outputs = await executionService.executeAgent(agent.id, {
+      message: 'What is my balance?',
+    });
+    expect(outputs.some((o) => o.type === 'text' && o.content === 'Your balance is 1.5 SOL')).toBe(
+      true,
+    );
   });
 
   it('handles tool call loop', async () => {
@@ -131,16 +139,16 @@ describe('ExecutionService', () => {
       walletId: 'w1',
       name: 'Idle Agent',
       description: 'idle',
-      framework: 'langchain',
+      framework: 'solagent',
       llmProvider: 'openai',
       model: 'gpt-4o',
       systemPrompt: 'You are helpful.',
       tools: [],
     });
 
-    await expect(
-      executionService.executeAgent(agent.id, { message: 'hello' }),
-    ).rejects.toThrow('not running');
+    await expect(executionService.executeAgent(agent.id, { message: 'hello' })).rejects.toThrow(
+      'not running',
+    );
   });
 
   it('enforces max tool iterations', async () => {
@@ -148,6 +156,8 @@ describe('ExecutionService', () => {
     vi.mocked(mockProvider.chat).mockResolvedValue(toolCallResponse);
 
     const outputs = await executionService.executeAgent(agent.id, { message: 'loop forever' });
-    expect(outputs.some((o) => o.type === 'error' && o.content.includes('Max tool iterations'))).toBe(true);
+    expect(
+      outputs.some((o) => o.type === 'error' && o.content.includes('Max tool iterations')),
+    ).toBe(true);
   });
 });

@@ -89,9 +89,7 @@ export type Policy = {
 
 // --- Zod schemas for API validation ---
 
-const bigintFromString = z
-  .union([z.string(), z.number()])
-  .transform((v) => BigInt(v));
+const bigintFromString = z.union([z.string(), z.number()]).transform((v) => BigInt(v));
 
 export const spendingLimitRuleSchema = z.object({
   type: z.literal('spending_limit'),
@@ -165,9 +163,9 @@ export const updatePolicySchema = z.object({
 
 export const evaluateTransactionSchema = z.object({
   walletId: z.string().uuid(),
-  amount: bigintFromString,
-  tokenMint: z.string().min(1),
-  destinationAddress: z.string().min(1),
-  programIds: z.array(z.string()),
+  amount: bigintFromString.optional(),
+  tokenMint: z.string().optional().default(''),
+  destinationAddress: z.string().optional().default(''),
+  programIds: z.array(z.string()).optional().default([]),
   instructions: z.array(z.unknown()).default([]),
 });

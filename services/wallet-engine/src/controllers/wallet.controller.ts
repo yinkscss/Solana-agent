@@ -4,10 +4,17 @@ import type { WalletService } from '../services/wallet.service';
 import type { BalanceService } from '../services/balance.service';
 import type { CreateWalletBody, SignTransactionBody } from '../types';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const createWalletController = (
   walletService: WalletService,
   balanceService: BalanceService,
 ) => {
+  const resolveWallet = (param: string) =>
+    UUID_RE.test(param)
+      ? walletService.getWallet(param)
+      : walletService.getWalletByPublicKey(param);
+
   const create = async (c: Context) => {
     const body = c.get('validatedBody') as CreateWalletBody;
     const wallet = await walletService.createWallet(
@@ -21,13 +28,14 @@ export const createWalletController = (
 
   const getById = async (c: Context) => {
     const { walletId } = c.req.param();
-    const wallet = await walletService.getWallet(walletId!);
+    const wallet = await resolveWallet(walletId!);
     return c.json({ data: wallet });
   };
 
   const getBalance = async (c: Context) => {
     const { walletId } = c.req.param();
-    const balance = await balanceService.getBalance(walletId!);
+    const wallet = await resolveWallet(walletId!);
+    const balance = await balanceService.getBalance(wallet.id);
     return c.json({
       data: {
         ...balance,
@@ -83,8 +91,16 @@ export const createWalletController = (
     return c.json({ data: wallets });
   };
 
+  const listAll = async (c: Context) => {
+    const page = Number(c.req.query('page') ?? '1');
+    const pageSize = Number(c.req.query('pageSize') ?? '50');
+    const result = await walletService.listWallets({ page, pageSize });
+    return c.json(result.data);
+  };
+
   return {
     create,
+    listAll,
     getById,
     getBalance,
     getTokenBalances,

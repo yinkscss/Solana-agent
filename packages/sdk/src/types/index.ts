@@ -44,7 +44,7 @@ export interface Policy {
 }
 
 export interface SpendingLimitRule {
-  type: "spending_limit";
+  type: 'spending_limit';
   maxPerTransaction: string;
   maxPerWindow: string;
   windowDuration: number;
@@ -52,17 +52,17 @@ export interface SpendingLimitRule {
 }
 
 export interface ProgramAllowlistRule {
-  type: "program_allowlist";
+  type: 'program_allowlist';
   programIds: string[];
 }
 
 export interface TokenAllowlistRule {
-  type: "token_allowlist";
+  type: 'token_allowlist';
   tokenMints: string[];
 }
 
 export interface AddressBlocklistRule {
-  type: "address_blocklist";
+  type: 'address_blocklist';
   addresses: string[];
 }
 
@@ -84,7 +84,7 @@ export interface UpdatePolicyParams {
 }
 
 export interface PolicyEvaluation {
-  decision: "allow" | "deny" | "require_approval";
+  decision: 'allow' | 'deny' | 'require_approval';
   reasons: string[];
   approvalId?: string;
 }
@@ -119,7 +119,7 @@ export interface CreateTransactionParams {
   tokenMint?: string;
   instructions?: unknown[];
   gasless?: boolean;
-  urgency?: "low" | "medium" | "high";
+  urgency?: 'low' | 'medium' | 'high';
 }
 
 // ── Agent ───────────────────────────────────────────────────────────────────
@@ -145,8 +145,8 @@ export interface CreateAgentParams {
   walletId: string;
   name: string;
   description: string;
-  framework: "langchain" | "vercel-ai";
-  llmProvider: "openai" | "anthropic";
+  framework: 'solagent' | 'vercel-ai';
+  llmProvider: 'openai' | 'anthropic';
   model: string;
   systemPrompt: string;
   tools?: string[];

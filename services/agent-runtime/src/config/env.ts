@@ -9,6 +9,7 @@ const envSchema = z.object({
   POLICY_ENGINE_URL: z.string().default('http://localhost:3003'),
   TRANSACTION_ENGINE_URL: z.string().default('http://localhost:3004'),
   DEFI_ENGINE_URL: z.string().default('http://localhost:3005'),
+  SOLANA_RPC_URL: z.string().default('https://api.devnet.solana.com'),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   DEFAULT_LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),

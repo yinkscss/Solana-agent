@@ -1,25 +1,23 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { LiveIndicator } from "@/components/live-indicator";
-import { TransactionTable } from "@/components/transactions/transaction-table";
-import { useWebSocket } from "@/hooks/use-websocket";
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws";
+import { Badge } from '@/components/ui/badge';
+import { LiveIndicator } from '@/components/live-indicator';
+import { TransactionTable } from '@/components/transactions/transaction-table';
+import { useWebSocketContext } from '@/lib/websocket-context';
 
 export default function TransactionsPage() {
-  const { connected, lastEvent } = useWebSocket(WS_URL, "default");
+  const { connected, lastEvent } = useWebSocketContext();
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
-          <p className="text-muted-foreground">
-            View and filter transaction history
+          <p className="mt-1 text-sm text-muted-foreground">
+            Monitor and filter on-chain transaction history across all wallets.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           {connected && (
             <Badge
               variant="outline"
@@ -31,6 +29,7 @@ export default function TransactionsPage() {
           <LiveIndicator connected={connected} />
         </div>
       </div>
+
       <TransactionTable lastWsEvent={lastEvent} />
     </div>
   );

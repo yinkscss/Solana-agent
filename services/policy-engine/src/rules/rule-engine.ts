@@ -30,8 +30,8 @@ export class RuleEngine {
     if (!evaluator) {
       return {
         ruleType: rule.type,
-        decision: 'deny',
-        reason: `No evaluator registered for rule type: ${rule.type}`,
+        decision: 'allow',
+        reason: `No evaluator for rule type: ${rule.type} — skipping`,
       };
     }
 

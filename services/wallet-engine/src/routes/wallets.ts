@@ -6,6 +6,7 @@ import { createWalletBodySchema, signTransactionBodySchema } from '../types';
 export const createWalletRoutes = (controller: WalletController): Hono => {
   const router = new Hono();
 
+  router.get('/', controller.listAll);
   router.post('/', validateBody(createWalletBodySchema), controller.create);
   router.get('/:walletId', controller.getById);
   router.get('/:walletId/balance', controller.getBalance);

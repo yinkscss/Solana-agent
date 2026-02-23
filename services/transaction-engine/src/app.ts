@@ -18,6 +18,7 @@ import { createTransactionService } from './services/transaction.service';
 import type { TransactionRepository } from './services/transaction.service';
 import { createTransactionController } from './controllers/transaction.controller';
 import { createTransactionRoutes, createWalletTransactionRoutes } from './routes/transactions';
+import { createDrizzleTransactionRepo } from './repositories/drizzle-transaction.repository';
 import type { TransactionRecord, TransactionListOptions } from './types';
 import type { TransactionStatus } from '@solagent/common';
 
@@ -66,7 +67,9 @@ export const createApp = (deps?: {
   connection?: Connection;
   walletResolver?: WalletResolverService;
 }) => {
-  const repo = deps?.repo ?? createInMemoryRepo();
+  const repo =
+    deps?.repo ??
+    (process.env.DATABASE_URL ? createDrizzleTransactionRepo() : createInMemoryRepo());
   const redis = deps?.redis ?? new Redis(env.REDIS_URL, { lazyConnect: true });
   const connection = deps?.connection ?? new Connection(env.SOLANA_RPC_URL, 'confirmed');
 
@@ -77,7 +80,8 @@ export const createApp = (deps?: {
   const submitterService = createSubmitterService(connection, env.KORA_URL, env.MAX_RETRIES);
   const confirmationService = createConfirmationService(connection, env.CONFIRMATION_TIMEOUT_MS);
   const priorityFeeService = createPriorityFeeService(connection, redis);
-  const walletResolverService = deps?.walletResolver ?? createWalletResolverService(env.WALLET_ENGINE_URL);
+  const walletResolverService =
+    deps?.walletResolver ?? createWalletResolverService(env.WALLET_ENGINE_URL);
 
   const transactionService = createTransactionService({
     repo,

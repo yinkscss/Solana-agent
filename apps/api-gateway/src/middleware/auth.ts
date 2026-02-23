@@ -9,11 +9,22 @@ export interface ApiKeyEntry {
 
 export const parseApiKeys = (raw: string): Map<string, ApiKeyEntry> => {
   const store = new Map<string, ApiKeyEntry>();
-  if (!raw) return store;
+  if (!raw || raw.trim() === '') return store;
+
   for (const pair of raw.split(',')) {
-    const [key, secret] = pair.split(':');
-    if (key && secret) store.set(key.trim(), { key: key.trim(), secret: secret.trim() });
+    const trimmed = pair.trim();
+    if (!trimmed) continue;
+
+    const colonIdx = trimmed.indexOf(':');
+    if (colonIdx === -1) {
+      store.set(trimmed, { key: trimmed, secret: '' });
+    } else {
+      const key = trimmed.slice(0, colonIdx).trim();
+      const secret = trimmed.slice(colonIdx + 1).trim();
+      if (key) store.set(key, { key, secret });
+    }
   }
+
   return store;
 };
 
@@ -21,6 +32,11 @@ const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000;
 
 export const auth = (apiKeys: Map<string, ApiKeyEntry>) =>
   createMiddleware(async (c, next) => {
+    if (apiKeys.size === 0) {
+      await next();
+      return;
+    }
+
     const apiKey = c.req.header('x-api-key');
     if (!apiKey) {
       throw new HTTPException(401, { message: 'Missing X-API-Key header' });
@@ -32,7 +48,7 @@ export const auth = (apiKeys: Map<string, ApiKeyEntry>) =>
     }
 
     const signature = c.req.header('x-signature');
-    if (signature) {
+    if (signature && entry.secret) {
       const timestamp = c.req.header('x-timestamp');
       if (!timestamp) {
         throw new HTTPException(401, { message: 'Missing X-Timestamp header for signed request' });

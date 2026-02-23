@@ -1,5 +1,10 @@
-import { SolAgentError } from '@solagent/common';
-import type { AgentConfig, AgentInput, AgentOutput, AgentState, AgentFrameworkType } from '../types/index.js';
+import type {
+  AgentConfig,
+  AgentInput,
+  AgentOutput,
+  AgentState,
+  AgentFrameworkType,
+} from '../types/index.js';
 import type { LLMProvider, LLMMessage } from '../llm/provider.interface.js';
 import type { Tool } from '../tools/tool.interface.js';
 import type { AgentFramework } from './framework.interface.js';
@@ -56,64 +61,35 @@ export abstract class BaseAdapter implements AgentFramework {
     while (iterations < maxIterations) {
       iterations++;
 
-      const response = await this.provider.chat(messages, toolDefs.length > 0 ? toolDefs : undefined, {
-        maxTokens: this.config.maxTokens,
-        temperature: this.config.temperature,
-      });
+      const response = await this.provider.chat(
+        messages,
+        toolDefs.length > 0 ? toolDefs : undefined,
+        {
+          maxTokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+        },
+      );
 
       if (response.finishReason === 'tool_calls' && response.toolCalls?.length) {
+        messages.push({
+          role: 'assistant',
+          content: response.content ?? '',
+          toolCalls: response.toolCalls,
+        });
+
+        this.state.conversationHistory.push({
+          role: 'assistant',
+          content: response.content ?? '',
+          toolCalls: response.toolCalls.map((tc) => ({
+            id: tc.id,
+            name: tc.name,
+            arguments: tc.arguments,
+          })),
+          timestamp: new Date(),
+        });
+
         for (const toolCall of response.toolCalls) {
-          yield {
-            type: 'tool_call',
-            content: `Calling ${toolCall.name}`,
-            toolName: toolCall.name,
-            toolArgs: toolCall.arguments,
-          };
-
-          const tool = this.tools.find((t) => t.name === toolCall.name);
-          if (!tool) {
-            const errorResult = { success: false, error: `Tool not found: ${toolCall.name}` };
-            messages.push({
-              role: 'assistant',
-              content: '',
-            });
-            messages.push({
-              role: 'tool',
-              content: JSON.stringify(errorResult),
-              toolCallId: toolCall.id,
-              name: toolCall.name,
-            });
-            yield { type: 'tool_result', content: JSON.stringify(errorResult), toolName: toolCall.name, toolResult: errorResult };
-            continue;
-          }
-
-          const result = await tool.execute(toolCall.arguments);
-
-          messages.push({
-            role: 'assistant',
-            content: response.content ?? '',
-          });
-          messages.push({
-            role: 'tool',
-            content: JSON.stringify(result),
-            toolCallId: toolCall.id,
-            name: toolCall.name,
-          });
-
-          this.state.conversationHistory.push({
-            role: 'assistant',
-            content: `Tool call: ${toolCall.name}`,
-            timestamp: new Date(),
-          });
-          this.state.conversationHistory.push({
-            role: 'tool',
-            content: JSON.stringify(result),
-            toolName: toolCall.name,
-            toolCallId: toolCall.id,
-            timestamp: new Date(),
-          });
-
-          yield { type: 'tool_result', content: JSON.stringify(result), toolName: toolCall.name, toolResult: result };
+          yield* this.executeToolCall(toolCall, messages);
         }
         continue;
       }
@@ -133,6 +109,64 @@ export abstract class BaseAdapter implements AgentFramework {
     yield {
       type: 'error',
       content: `Max tool iterations (${maxIterations}) exceeded`,
+    };
+  }
+
+  private async *executeToolCall(
+    toolCall: { id: string; name: string; arguments: Record<string, unknown> },
+    messages: LLMMessage[],
+  ): AsyncGenerator<AgentOutput> {
+    yield {
+      type: 'tool_call',
+      content: `Calling ${toolCall.name}`,
+      toolName: toolCall.name,
+      toolArgs: toolCall.arguments,
+    };
+
+    const tool = this.tools.find((t) => t.name === toolCall.name);
+    if (!tool) {
+      const errorResult = { success: false, error: `Tool not found: ${toolCall.name}` };
+      messages.push({
+        role: 'tool',
+        content: JSON.stringify(errorResult),
+        toolCallId: toolCall.id,
+        name: toolCall.name,
+      });
+      this.state.conversationHistory.push({
+        role: 'tool',
+        content: JSON.stringify(errorResult),
+        toolName: toolCall.name,
+        toolCallId: toolCall.id,
+        timestamp: new Date(),
+      });
+      yield {
+        type: 'tool_result',
+        content: JSON.stringify(errorResult),
+        toolName: toolCall.name,
+        toolResult: errorResult,
+      };
+      return;
+    }
+
+    const result = await tool.execute(toolCall.arguments);
+    messages.push({
+      role: 'tool',
+      content: JSON.stringify(result),
+      toolCallId: toolCall.id,
+      name: toolCall.name,
+    });
+    this.state.conversationHistory.push({
+      role: 'tool',
+      content: JSON.stringify(result),
+      toolName: toolCall.name,
+      toolCallId: toolCall.id,
+      timestamp: new Date(),
+    });
+    yield {
+      type: 'tool_result',
+      content: JSON.stringify(result),
+      toolName: toolCall.name,
+      toolResult: result,
     };
   }
 
@@ -171,6 +205,7 @@ export abstract class BaseAdapter implements AgentFramework {
         content: msg.content,
         ...(msg.toolCallId && { toolCallId: msg.toolCallId }),
         ...(msg.toolName && { name: msg.toolName }),
+        ...(msg.toolCalls?.length && { toolCalls: msg.toolCalls }),
       });
     }
 

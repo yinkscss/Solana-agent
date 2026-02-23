@@ -12,11 +12,15 @@ import { ToolRegistry } from './tools/tool-registry.js';
 import { createTransferTool } from './tools/transfer.tool.js';
 import { createBalanceTool } from './tools/balance.tool.js';
 import { createSwapTool } from './tools/swap.tool.js';
+import { createCreateWalletTool } from './tools/create-wallet.tool.js';
+import { createAirdropTool } from './tools/airdrop.tool.js';
 import { createAgentController } from './controllers/agent.controller.js';
 import { createAgentRoutes, createOrgAgentRoutes } from './routes/agents.js';
+import { createDrizzleAgentRepo } from './repositories/drizzle-agent.repository.js';
+import { RedisStateManager } from './repositories/drizzle-state.repository.js';
 import type { AgentRecord, ListOptions } from './types/index.js';
-import type { AgentStatus } from '@solagent/common';
 import type { LLMProvider } from './llm/provider.interface.js';
+import Redis from 'ioredis';
 
 const createInMemoryRepo = (): AgentRepository => {
   const store = new Map<string, AgentRecord>();
@@ -28,6 +32,13 @@ const createInMemoryRepo = (): AgentRepository => {
       return full;
     },
     findById: async (id) => store.get(id) ?? null,
+    findAll: async (opts: ListOptions) => {
+      const all = [...store.values()];
+      const page = opts.page ?? 1;
+      const pageSize = opts.pageSize ?? 20;
+      const start = (page - 1) * pageSize;
+      return { data: all.slice(start, start + pageSize), total: all.length };
+    },
     findByOrgId: async (orgId, opts: ListOptions) => {
       const all = [...store.values()].filter((a) => a.orgId === orgId);
       const page = opts.page ?? 1;
@@ -59,13 +70,19 @@ export interface AppDeps {
 }
 
 export const createApp = (deps?: AppDeps) => {
-  const repo = deps?.repo ?? createInMemoryRepo();
-  const stateManager = new InMemoryStateManager();
+  const repo =
+    deps?.repo ?? (process.env.DATABASE_URL ? createDrizzleAgentRepo() : createInMemoryRepo());
+  const redis = new Redis(env.REDIS_URL, { lazyConnect: true });
+  const stateManager = process.env.DATABASE_URL
+    ? new RedisStateManager(redis)
+    : new InMemoryStateManager();
 
   const toolRegistry = new ToolRegistry();
   toolRegistry.register(createTransferTool(env.TRANSACTION_ENGINE_URL));
   toolRegistry.register(createBalanceTool(env.WALLET_ENGINE_URL));
   toolRegistry.register(createSwapTool(env.DEFI_ENGINE_URL));
+  toolRegistry.register(createCreateWalletTool(env.WALLET_ENGINE_URL));
+  toolRegistry.register(createAirdropTool(env.WALLET_ENGINE_URL, env.SOLANA_RPC_URL));
 
   const agentService = createAgentService(repo);
 

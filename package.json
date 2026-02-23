@@ -1,10 +1,14 @@
 {
   "name": "solagent",
   "private": true,
-  "workspaces": ["apps/*", "services/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "export $(grep -v '^#' .env 2>/dev/null | grep -v '^$' | xargs) && turbo run dev --concurrency 15",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
@@ -14,6 +18,11 @@
     "db:seed": "turbo run db:seed --filter=@solagent/db",
     "docker:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d",
     "docker:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "infra:up": "docker compose -f infrastructure/docker/docker-compose.yml up -d postgres redis redpanda",
+    "infra:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "services:up": "docker compose -f infrastructure/docker/docker-compose.yml -f infrastructure/docker/docker-compose.services.yml up -d",
+    "services:down": "docker compose -f infrastructure/docker/docker-compose.yml -f infrastructure/docker/docker-compose.services.yml down",
+    "bootstrap": "bash scripts/bootstrap.sh",
     "test:e2e": "vitest run --config tests/vitest.config.ts",
     "prepare": "husky",
     "devnet:smoke": "bun run scripts/devnet-smoke-test.ts",
@@ -37,8 +46,13 @@
     "vitest": "^2.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "*.{json,md,yml,yaml}": ["prettier --write"]
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "packageManager": "bun@1.1.0"
 }

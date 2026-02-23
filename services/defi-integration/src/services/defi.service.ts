@@ -1,21 +1,59 @@
 import type { AdapterRegistry } from '../adapters/adapter-registry';
-import type { SwapQuoteParams, SwapQuote, SwapExecuteParams, StakeParams } from '../adapters/adapter.interface';
+import type {
+  SwapQuoteParams,
+  SwapQuote,
+  SwapExecuteParams,
+  StakeParams,
+} from '../adapters/adapter.interface';
 import type { PriceFeed, PriceFeedService } from './price-feed.service';
 import { ProtocolNotFoundError, OperationNotSupportedError, ExternalServiceError } from '../types';
 
+export interface SwapResult {
+  transactionId: string;
+  inputAmount?: string;
+  outputAmount?: string;
+}
+
 export interface DeFiService {
   getSwapQuote(protocol: string, params: SwapQuoteParams): Promise<SwapQuote>;
-  executeSwap(walletId: string, protocol: string, params: SwapExecuteParams): Promise<{ transactionId: string }>;
-  stake(walletId: string, protocol: string, params: StakeParams): Promise<{ transactionId: string }>;
-  unstake(walletId: string, protocol: string, params: StakeParams): Promise<{ transactionId: string }>;
+  executeSwap(walletId: string, protocol: string, params: SwapExecuteParams): Promise<SwapResult>;
+  stake(
+    walletId: string,
+    protocol: string,
+    params: StakeParams,
+  ): Promise<{ transactionId: string }>;
+  unstake(
+    walletId: string,
+    protocol: string,
+    params: StakeParams,
+  ): Promise<{ transactionId: string }>;
   getPrice(mint: string): Promise<PriceFeed>;
   listProtocols(): { name: string; programIds: string[]; capabilities: string[] }[];
   getPoolInfo(protocol: string, poolId: string): Promise<unknown>;
 }
 
-const getCapabilities = (adapter: { getSwapQuote?: unknown; buildStakeInstructions?: unknown; buildUnstakeInstructions?: unknown; buildSupplyInstructions?: unknown; buildBorrowInstructions?: unknown; getPoolInfo?: unknown }) => {
+interface SignResponse {
+  data: { signature: string; signedTransaction: string };
+}
+
+interface RpcResponse {
+  result?: string;
+  error?: { code: number; message: string };
+}
+
+const getCapabilities = (adapter: {
+  getSwapQuote?: unknown;
+  buildSwapTransaction?: unknown;
+  buildSwapInstructions?: unknown;
+  buildStakeInstructions?: unknown;
+  buildUnstakeInstructions?: unknown;
+  buildSupplyInstructions?: unknown;
+  buildBorrowInstructions?: unknown;
+  getPoolInfo?: unknown;
+}) => {
   const caps: string[] = [];
-  if (adapter.getSwapQuote) caps.push('swap');
+  if (adapter.getSwapQuote || adapter.buildSwapTransaction || adapter.buildSwapInstructions)
+    caps.push('swap');
   if (adapter.buildStakeInstructions) caps.push('stake');
   if (adapter.buildUnstakeInstructions) caps.push('unstake');
   if (adapter.buildSupplyInstructions) caps.push('supply');
@@ -28,6 +66,8 @@ export const createDeFiService = (
   registry: AdapterRegistry,
   priceFeedService: PriceFeedService,
   transactionEngineUrl: string,
+  walletEngineUrl: string,
+  solanaRpcUrl: string,
 ): DeFiService => {
   const requireAdapter = (protocol: string) => {
     const adapter = registry.get(protocol);
@@ -35,7 +75,11 @@ export const createDeFiService = (
     return adapter;
   };
 
-  const submitToTransactionEngine = async (walletId: string, type: string, instructions: unknown[]): Promise<string> => {
+  const submitToTransactionEngine = async (
+    walletId: string,
+    type: string,
+    instructions: unknown[],
+  ): Promise<string> => {
     const res = await fetch(`${transactionEngineUrl}/api/v1/transactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,6 +100,39 @@ export const createDeFiService = (
     return data.data.id;
   };
 
+  const signAndSubmit = async (walletId: string, base64Tx: string): Promise<string> => {
+    const signRes = await fetch(`${walletEngineUrl}/api/v1/wallets/${walletId}/sign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: base64Tx }),
+    });
+
+    if (!signRes.ok) {
+      const text = await signRes.text().catch(() => 'Unknown error');
+      throw new ExternalServiceError('wallet-engine', `Sign failed: ${text}`);
+    }
+
+    const signed = (await signRes.json()) as SignResponse;
+
+    const rpcRes = await fetch(solanaRpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'sendTransaction',
+        params: [signed.data.signedTransaction, { encoding: 'base64', skipPreflight: false }],
+      }),
+    });
+
+    const rpcData = (await rpcRes.json()) as RpcResponse;
+    if (rpcData.error) {
+      throw new ExternalServiceError('solana-rpc', rpcData.error.message);
+    }
+
+    return rpcData.result!;
+  };
+
   return {
     async getSwapQuote(protocol, params) {
       const adapter = requireAdapter(protocol);
@@ -65,11 +142,24 @@ export const createDeFiService = (
 
     async executeSwap(walletId, protocol, params) {
       const adapter = requireAdapter(protocol);
-      if (!adapter.buildSwapInstructions) throw new OperationNotSupportedError(protocol, 'swap');
 
-      const instructions = await adapter.buildSwapInstructions(params);
-      const transactionId = await submitToTransactionEngine(walletId, 'swap', instructions);
-      return { transactionId };
+      if (adapter.buildSwapTransaction) {
+        const swapResult = await adapter.buildSwapTransaction(params);
+        const signature = await signAndSubmit(walletId, swapResult.transaction);
+        return {
+          transactionId: signature,
+          inputAmount: swapResult.inputAmount,
+          outputAmount: swapResult.outputAmount,
+        };
+      }
+
+      if (adapter.buildSwapInstructions) {
+        const instructions = await adapter.buildSwapInstructions(params);
+        const transactionId = await submitToTransactionEngine(walletId, 'swap', instructions);
+        return { transactionId };
+      }
+
+      throw new OperationNotSupportedError(protocol, 'swap');
     },
 
     async stake(walletId, protocol, params) {
@@ -83,7 +173,8 @@ export const createDeFiService = (
 
     async unstake(walletId, protocol, params) {
       const adapter = requireAdapter(protocol);
-      if (!adapter.buildUnstakeInstructions) throw new OperationNotSupportedError(protocol, 'unstake');
+      if (!adapter.buildUnstakeInstructions)
+        throw new OperationNotSupportedError(protocol, 'unstake');
 
       const instructions = await adapter.buildUnstakeInstructions(params);
       const transactionId = await submitToTransactionEngine(walletId, 'unstake', instructions);

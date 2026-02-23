@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Hexagon, ArrowRight, Loader2 } from "lucide-react";
-import { Providers } from "@/components/providers";
-import { useAuth } from "@/lib/auth";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Hexagon, ArrowRight, Loader2 } from 'lucide-react';
+import { Providers } from '@/components/providers';
+import { useAuth } from '@/lib/auth';
 
 function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!apiKey.trim()) return;
 
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       login(apiKey.trim());
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch {
-      setError("Invalid API key. Please try again.");
+      setError('Invalid API key. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -42,9 +42,7 @@ function LoginForm() {
             <Hexagon className="h-8 w-8 text-violet-500" />
           </div>
           <CardTitle className="text-2xl">SolAgent</CardTitle>
-          <CardDescription>
-            Enter your API key to access the dashboard
-          </CardDescription>
+          <CardDescription>Enter your API key to access the dashboard</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -57,9 +55,10 @@ function LoginForm() {
                 className="h-11"
                 autoFocus
               />
-              {error && (
-                <p className="text-sm text-red-400">{error}</p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Enter any string as API key for the demo
+              </p>
+              {error && <p className="text-sm text-red-400">{error}</p>}
             </div>
             <Button
               type="submit"
@@ -71,7 +70,7 @@ function LoginForm() {
               ) : (
                 <ArrowRight className="mr-2 h-4 w-4" />
               )}
-              {loading ? "Authenticating..." : "Continue"}
+              {loading ? 'Authenticating...' : 'Continue'}
             </Button>
           </form>
         </CardContent>

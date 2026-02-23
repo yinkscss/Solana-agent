@@ -16,8 +16,10 @@
     "@solagent/common": "workspace:*",
     "@solagent/db": "workspace:*",
     "@solagent/events": "workspace:*",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4.6.0",
     "ioredis": "^5.4.0",
+    "openai": "^4.77.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

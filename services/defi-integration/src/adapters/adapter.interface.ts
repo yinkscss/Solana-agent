@@ -41,6 +41,13 @@ export interface PoolInfo {
   apy: number;
 }
 
+export interface SwapTransactionResult {
+  transaction: string;
+  inputAmount: string;
+  outputAmount: string;
+  priceImpactPct: number;
+}
+
 export interface LendingParams {
   walletAddress: string;
   mint: string;
@@ -53,6 +60,8 @@ export interface DeFiProtocolAdapter {
 
   getSwapQuote?(params: SwapQuoteParams): Promise<SwapQuote>;
   buildSwapInstructions?(params: SwapExecuteParams): Promise<SerializedInstruction[]>;
+  /** Return a fully-serialized transaction (base64) ready for signing. */
+  buildSwapTransaction?(params: SwapExecuteParams): Promise<SwapTransactionResult>;
 
   getPoolInfo?(poolId: string): Promise<PoolInfo>;
 

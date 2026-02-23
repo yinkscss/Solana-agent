@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,34 +9,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
-import { api } from "@/lib/api";
-import type { PolicyRule } from "@/types";
+} from '@/components/ui/select';
+import { Plus, Trash2 } from 'lucide-react';
+import { api } from '@/lib/api';
+import type { PolicyRule } from '@/types';
 
 interface RuleDraft {
-  type: PolicyRule["type"];
+  type: PolicyRule['type'];
   params: string;
 }
+
+const DEFAULT_PARAMS: Record<PolicyRule['type'], string> = {
+  max_amount: '{"max": 10, "token": "SOL"}',
+  allowed_tokens: '{"tokens": ["SOL", "USDC"]}',
+  time_window: '{"maxPerWindow": 50, "windowHours": 24}',
+  whitelist: '{"addresses": []}',
+};
 
 export function CreatePolicyDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState("");
-  const [walletId, setWalletId] = useState("");
+  const [name, setName] = useState('');
+  const [walletId, setWalletId] = useState('');
   const [rules, setRules] = useState<RuleDraft[]>([]);
 
   function addRule() {
-    setRules([...rules, { type: "max_amount", params: '{"max": 10, "token": "SOL"}' }]);
+    setRules([...rules, { type: 'max_amount', params: DEFAULT_PARAMS.max_amount }]);
   }
 
   function removeRule(i: number) {
@@ -45,6 +52,10 @@ export function CreatePolicyDialog() {
 
   function updateRule(i: number, updates: Partial<RuleDraft>) {
     setRules(rules.map((r, idx) => (idx === i ? { ...r, ...updates } : r)));
+  }
+
+  function handleTypeChange(i: number, type: PolicyRule['type']) {
+    updateRule(i, { type, params: DEFAULT_PARAMS[type] });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -77,10 +88,9 @@ export function CreatePolicyDialog() {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create Policy</DialogTitle>
-          <DialogDescription>
-            Define rules to govern wallet transactions.
-          </DialogDescription>
+          <DialogDescription>Define rules to govern wallet transactions.</DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Name</label>
@@ -91,6 +101,7 @@ export function CreatePolicyDialog() {
               required
             />
           </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Wallet ID</label>
             <Input
@@ -100,6 +111,7 @@ export function CreatePolicyDialog() {
               required
             />
           </div>
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Rules</label>
@@ -108,19 +120,22 @@ export function CreatePolicyDialog() {
                 Add Rule
               </Button>
             </div>
+
             {rules.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 No rules added yet. Click &ldquo;Add Rule&rdquo; to define transaction constraints.
               </p>
             )}
+
             {rules.map((rule, i) => (
-              <div key={i} className="flex items-start gap-2 rounded-lg border border-border/50 p-3">
+              <div
+                key={i}
+                className="flex items-start gap-2 rounded-lg border border-border/50 p-3"
+              >
                 <div className="flex-1 space-y-2">
                   <Select
                     value={rule.type}
-                    onValueChange={(v) =>
-                      updateRule(i, { type: v as PolicyRule["type"] })
-                    }
+                    onValueChange={(v) => handleTypeChange(i, v as PolicyRule['type'])}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -151,6 +166,7 @@ export function CreatePolicyDialog() {
               </div>
             ))}
           </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
@@ -160,7 +176,7 @@ export function CreatePolicyDialog() {
               disabled={loading || !name || !walletId}
               className="bg-violet-600 hover:bg-violet-700"
             >
-              {loading ? "Creating..." : "Create Policy"}
+              {loading ? 'Creating...' : 'Create Policy'}
             </Button>
           </DialogFooter>
         </form>

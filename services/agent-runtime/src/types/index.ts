@@ -1,6 +1,6 @@
 import type { AgentStatus } from '@solagent/common';
 
-export type AgentFrameworkType = 'langchain' | 'vercel-ai' | 'eliza';
+export type AgentFrameworkType = 'solagent' | 'vercel-ai' | 'eliza';
 export type LLMProviderType = 'openai' | 'anthropic';
 
 export interface AgentConfig {
@@ -37,6 +37,7 @@ export interface AgentRecord {
 export interface AgentInput {
   message: string;
   conversationId?: string;
+  walletId?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -54,11 +55,18 @@ export interface ToolResult {
   error?: string;
 }
 
+export interface ConversationToolCall {
+  id: string;
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
 export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
   toolName?: string;
   toolCallId?: string;
+  toolCalls?: ConversationToolCall[];
   timestamp: Date;
 }
 
@@ -76,7 +84,7 @@ export interface ListOptions {
 
 export interface CreateAgentParams {
   orgId: string;
-  walletId: string;
+  walletId?: string;
   name: string;
   description: string;
   framework: AgentFrameworkType;

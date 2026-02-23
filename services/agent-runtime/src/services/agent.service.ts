@@ -6,6 +6,7 @@ import type { AgentRecord, CreateAgentParams, ListOptions } from '../types/index
 export interface AgentRepository {
   insert(record: Omit<AgentRecord, 'createdAt' | 'updatedAt'>): Promise<AgentRecord>;
   findById(id: string): Promise<AgentRecord | null>;
+  findAll(opts: ListOptions): Promise<{ data: AgentRecord[]; total: number }>;
   findByOrgId(orgId: string, opts: ListOptions): Promise<{ data: AgentRecord[]; total: number }>;
   updateStatus(id: string, status: AgentStatus): Promise<AgentRecord | null>;
   update(id: string, patch: Partial<AgentRecord>): Promise<AgentRecord | null>;
@@ -36,7 +37,7 @@ export const createAgentService = (repo: AgentRepository) => {
     repo.insert({
       id: generateId(),
       orgId: params.orgId,
-      walletId: params.walletId,
+      walletId: params.walletId ?? '',
       name: params.name,
       description: params.description,
       status: 'created',
@@ -54,11 +55,14 @@ export const createAgentService = (repo: AgentRepository) => {
     return record;
   };
 
+  const listAllAgents = async (
+    opts: ListOptions,
+  ): Promise<{ data: AgentRecord[]; total: number }> => repo.findAll(opts);
+
   const listAgents = async (
     orgId: string,
     opts: ListOptions,
-  ): Promise<{ data: AgentRecord[]; total: number }> =>
-    repo.findByOrgId(orgId, opts);
+  ): Promise<{ data: AgentRecord[]; total: number }> => repo.findByOrgId(orgId, opts);
 
   const transitionStatus = async (agentId: string, target: AgentStatus): Promise<AgentRecord> => {
     const agent = await getAgent(agentId);
@@ -73,14 +77,27 @@ export const createAgentService = (repo: AgentRepository) => {
   const stopAgent = (agentId: string) => transitionStatus(agentId, 'stopped');
   const destroyAgent = (agentId: string) => transitionStatus(agentId, 'destroyed');
 
-  const updateAgent = async (agentId: string, patch: Partial<AgentRecord>): Promise<AgentRecord> => {
+  const updateAgent = async (
+    agentId: string,
+    patch: Partial<AgentRecord>,
+  ): Promise<AgentRecord> => {
     await getAgent(agentId);
     const updated = await repo.update(agentId, patch);
     if (!updated) throw new AgentNotFoundError(agentId);
     return updated;
   };
 
-  return { createAgent, getAgent, listAgents, startAgent, pauseAgent, stopAgent, destroyAgent, updateAgent };
+  return {
+    createAgent,
+    getAgent,
+    listAllAgents,
+    listAgents,
+    startAgent,
+    pauseAgent,
+    stopAgent,
+    destroyAgent,
+    updateAgent,
+  };
 };
 
 export type AgentService = ReturnType<typeof createAgentService>;

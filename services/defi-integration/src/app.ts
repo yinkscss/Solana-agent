@@ -30,7 +30,13 @@ export const createApp = (deps?: { redis?: Redis }) => {
   registry.register(createSPLTransferAdapter(env.SOLANA_RPC_URL));
 
   const priceFeedService = createPriceFeedService(env.PYTH_API_URL, redis);
-  const defiService = createDeFiService(registry, priceFeedService, env.TRANSACTION_ENGINE_URL);
+  const defiService = createDeFiService(
+    registry,
+    priceFeedService,
+    env.TRANSACTION_ENGINE_URL,
+    env.WALLET_ENGINE_URL,
+    env.SOLANA_RPC_URL,
+  );
   const controller = createDeFiController(defiService);
 
   const app = new Hono();

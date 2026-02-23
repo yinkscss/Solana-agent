@@ -1,6 +1,6 @@
-export type AgentStatus = "created" | "running" | "paused" | "stopped";
-export type AgentFramework = "langchain" | "vercel-ai";
-export type AgentModel = "gpt-4o" | "claude-3";
+export type AgentStatus = 'created' | 'running' | 'paused' | 'stopped';
+export type AgentFramework = 'solagent' | 'vercel-ai';
+export type AgentModel = 'gpt-4o' | 'claude-3';
 
 export interface Agent {
   id: string;
@@ -15,8 +15,8 @@ export interface Agent {
   updatedAt: string;
 }
 
-export type WalletStatus = "active" | "inactive" | "locked";
-export type WalletNetwork = "mainnet-beta" | "devnet" | "testnet";
+export type WalletStatus = 'active' | 'inactive' | 'locked';
+export type WalletNetwork = 'mainnet-beta' | 'devnet' | 'testnet';
 
 export interface Wallet {
   id: string;
@@ -29,8 +29,8 @@ export interface Wallet {
   createdAt: string;
 }
 
-export type TransactionStatus = "pending" | "confirmed" | "failed";
-export type TransactionType = "transfer" | "swap" | "stake" | "other";
+export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
+export type TransactionType = 'transfer' | 'swap' | 'stake' | 'other';
 
 export interface Transaction {
   id: string;
@@ -47,7 +47,7 @@ export interface Transaction {
 
 export interface PolicyRule {
   id: string;
-  type: "max_amount" | "allowed_tokens" | "time_window" | "whitelist";
+  type: 'max_amount' | 'allowed_tokens' | 'time_window' | 'whitelist';
   params: Record<string, unknown>;
 }
 
@@ -65,7 +65,7 @@ export interface Policy {
 export interface ServiceHealth {
   name: string;
   url: string;
-  status: "healthy" | "unhealthy" | "unknown";
+  status: 'healthy' | 'unhealthy' | 'unknown';
   latency?: number;
 }
 

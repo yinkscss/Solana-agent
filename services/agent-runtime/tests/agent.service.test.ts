@@ -14,6 +14,13 @@ const createMockRepo = (): AgentRepository => {
       return full;
     },
     findById: async (id) => store.get(id) ?? null,
+    findAll: async (opts: ListOptions) => {
+      const all = [...store.values()];
+      const page = opts.page ?? 1;
+      const pageSize = opts.pageSize ?? 20;
+      const start = (page - 1) * pageSize;
+      return { data: all.slice(start, start + pageSize), total: all.length };
+    },
     findByOrgId: async (orgId, opts: ListOptions) => {
       const all = [...store.values()].filter((a) => a.orgId === orgId);
       const page = opts.page ?? 1;
@@ -44,7 +51,7 @@ const defaultParams = {
   walletId: 'wallet-1',
   name: 'Test Agent',
   description: 'A test agent',
-  framework: 'langchain' as const,
+  framework: 'solagent' as const,
   llmProvider: 'openai' as const,
   model: 'gpt-4o',
   systemPrompt: 'You are helpful.',
@@ -64,7 +71,7 @@ describe('AgentService', () => {
       expect(agent.name).toBe('Test Agent');
       expect(agent.status).toBe('created');
       expect(agent.orgId).toBe('org-1');
-      expect(agent.framework).toBe('langchain');
+      expect(agent.framework).toBe('solagent');
     });
   });
 
@@ -161,7 +168,9 @@ describe('AgentService', () => {
     });
 
     it('throws for missing agent', async () => {
-      await expect(service.updateAgent('nonexistent', { name: 'x' })).rejects.toThrow('Agent not found');
+      await expect(service.updateAgent('nonexistent', { name: 'x' })).rejects.toThrow(
+        'Agent not found',
+      );
     });
   });
 });

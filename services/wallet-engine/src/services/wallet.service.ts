@@ -7,7 +7,12 @@ import { WalletNotFoundError, WalletFrozenError, ProviderError } from '../types'
 export interface WalletRepository {
   insert(record: Omit<WalletRecord, 'createdAt' | 'updatedAt'>): Promise<WalletRecord>;
   findById(id: string): Promise<WalletRecord | null>;
+  findByPublicKey(publicKey: string): Promise<WalletRecord | null>;
   findByAgentId(agentId: string): Promise<WalletRecord[]>;
+  findAll(opts: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ data: WalletRecord[]; total: number }>;
   updateStatus(id: string, status: WalletRecord['status']): Promise<WalletRecord | null>;
 }
 
@@ -58,6 +63,12 @@ export const createWalletService = (repo: WalletRepository) => {
     return wallet;
   };
 
+  const getWalletByPublicKey = async (publicKey: string): Promise<WalletRecord> => {
+    const wallet = await repo.findByPublicKey(publicKey);
+    if (!wallet) throw new WalletNotFoundError(publicKey);
+    return wallet;
+  };
+
   const getWalletsByAgent = async (agentId: string): Promise<WalletRecord[]> =>
     repo.findByAgentId(agentId);
 
@@ -96,10 +107,14 @@ export const createWalletService = (repo: WalletRepository) => {
     );
   };
 
+  const listWallets = async (opts: { page?: number; pageSize?: number } = {}) => repo.findAll(opts);
+
   return {
     createWallet,
     getWallet,
+    getWalletByPublicKey,
     getWalletsByAgent,
+    listWallets,
     deactivateWallet,
     recoverWallet,
     signTransaction,
