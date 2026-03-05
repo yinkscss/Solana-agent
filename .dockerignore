@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+**/node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+**/.next
+dist
+**/dist
+out
+.turbo
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+*.md
+!README.md
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Tests and dev
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+**/tests
+coverage
+.nyc_output
+
+# Misc
+*.log
+.DS_Store
+*.local

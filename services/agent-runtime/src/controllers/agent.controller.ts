@@ -106,18 +106,40 @@ export const createAgentController = (
       message: string;
       conversationId?: string;
       walletId?: string;
+      walletPublicKey?: string;
+      confirmedTools?: string[];
       metadata?: Record<string, unknown>;
     };
     const outputs = await executionService.executeAgent(agentId!, {
       message: body.message,
       conversationId: body.conversationId,
       walletId: body.walletId,
+      walletPublicKey: body.walletPublicKey,
+      confirmedTools: body.confirmedTools,
       metadata: body.metadata,
     });
     return c.json({ data: outputs });
   };
 
-  return { create, getById, listAll, list, update, start, pause, stop, destroy, execute };
+  const clearState = async (c: Context) => {
+    const { agentId } = c.req.param();
+    await executionService.clearAgentState(agentId!);
+    return c.json({ success: true });
+  };
+
+  return {
+    create,
+    getById,
+    listAll,
+    list,
+    update,
+    start,
+    pause,
+    stop,
+    destroy,
+    execute,
+    clearState,
+  };
 };
 
 export type AgentController = ReturnType<typeof createAgentController>;

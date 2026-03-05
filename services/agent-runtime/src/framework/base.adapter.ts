@@ -12,6 +12,7 @@ import { zodToJsonSchema } from '../tools/zod-to-schema.js';
 import type { ZodObject, ZodRawShape } from 'zod';
 
 const MAX_ITERATIONS_DEFAULT = 10;
+const CONFIRMATION_REQUIRED_TOOLS = new Set(['transfer', 'swap', 'create_wallet']);
 
 export abstract class BaseAdapter implements AgentFramework {
   abstract readonly name: AgentFrameworkType;
@@ -41,7 +42,8 @@ export abstract class BaseAdapter implements AgentFramework {
     }
 
     this.state = state;
-    const maxIterations = this.config.maxTokens ? MAX_ITERATIONS_DEFAULT : MAX_ITERATIONS_DEFAULT;
+    const confirmedTools = new Set(input.confirmedTools ?? []);
+    const maxIterations = MAX_ITERATIONS_DEFAULT;
 
     this.state.conversationHistory.push({
       role: 'user',
@@ -89,7 +91,7 @@ export abstract class BaseAdapter implements AgentFramework {
         });
 
         for (const toolCall of response.toolCalls) {
-          yield* this.executeToolCall(toolCall, messages);
+          yield* this.executeToolCall(toolCall, messages, confirmedTools);
         }
         continue;
       }
@@ -115,7 +117,36 @@ export abstract class BaseAdapter implements AgentFramework {
   private async *executeToolCall(
     toolCall: { id: string; name: string; arguments: Record<string, unknown> },
     messages: LLMMessage[],
+    confirmedTools: Set<string>,
   ): AsyncGenerator<AgentOutput> {
+    if (CONFIRMATION_REQUIRED_TOOLS.has(toolCall.name) && !confirmedTools.has(toolCall.name)) {
+      yield {
+        type: 'tool_call',
+        content: `Requesting confirmation for ${toolCall.name}`,
+        toolName: toolCall.name,
+        toolArgs: toolCall.arguments,
+      };
+
+      const confirmationResult = {
+        status: 'confirmation_required',
+        message: 'Waiting for user confirmation before executing this action.',
+      };
+      messages.push({
+        role: 'tool',
+        content: JSON.stringify(confirmationResult),
+        toolCallId: toolCall.id,
+        name: toolCall.name,
+      });
+      this.state.conversationHistory.push({
+        role: 'tool',
+        content: JSON.stringify(confirmationResult),
+        toolName: toolCall.name,
+        toolCallId: toolCall.id,
+        timestamp: new Date(),
+      });
+      return;
+    }
+
     yield {
       type: 'tool_call',
       content: `Calling ${toolCall.name}`,

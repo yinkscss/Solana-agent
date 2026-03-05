@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Wallet, Copy, Check } from 'lucide-react';
+import { Wallet, Copy, Check, ExternalLink } from 'lucide-react';
 import type { Wallet as WalletType } from '@/types';
-
-function truncateAddress(addr: string) {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
+import { truncateAddress } from '@/lib/format';
+import { useCopyToClipboard } from '@/lib/use-copy-to-clipboard';
 
 const networkColors: Record<string, string> = {
   'mainnet-beta': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -17,32 +14,42 @@ const networkColors: Record<string, string> = {
   testnet: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
-export function WalletBalanceCard({ wallet }: { wallet: WalletType }) {
-  const [copied, setCopied] = useState(false);
+interface WalletBalanceCardProps {
+  wallet: WalletType;
+  isPrimary?: boolean;
+}
 
-  function copyAddress() {
-    navigator.clipboard.writeText(wallet.address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+export function WalletBalanceCard({ wallet, isPrimary }: WalletBalanceCardProps) {
+  const { copied, copy } = useCopyToClipboard();
+
+  const copyAddress = () => copy(wallet.address);
 
   return (
-    <Card className="border-border/50 bg-card/50 transition-colors hover:bg-accent/50">
+    <Card
+      className={`border-border/50 bg-card/50 transition-colors hover:bg-accent/50 ${isPrimary ? 'ring-1 ring-violet-500/30' : ''}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-base">{wallet.label}</CardTitle>
           </div>
-          <Badge variant="outline" className={networkColors[wallet.network]}>
-            {wallet.network}
-          </Badge>
+          <div className="flex items-center gap-1.5">
+            {isPrimary && (
+              <Badge variant="outline" className="border-violet-500/30 text-violet-400 text-[10px]">
+                Primary
+              </Badge>
+            )}
+            <Badge variant="outline" className={networkColors[wallet.network]}>
+              {wallet.network}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-2xl font-bold">{wallet.balance}</span>
+          <span className="text-2xl font-bold">{wallet.balance.toFixed(4)}</span>
           <span className="text-sm text-muted-foreground">SOL</span>
         </div>
 
@@ -53,6 +60,18 @@ export function WalletBalanceCard({ wallet }: { wallet: WalletType }) {
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyAddress}>
             {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
           </Button>
+          {wallet.address && (
+            <a
+              href={`https://explorer.solana.com/address/${wallet.address}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex"
+            >
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            </a>
+          )}
         </div>
       </CardContent>
 
@@ -66,7 +85,6 @@ export function WalletBalanceCard({ wallet }: { wallet: WalletType }) {
             />
             <span className="capitalize">{wallet.status}</span>
           </div>
-          <span>Created {new Date(wallet.createdAt).toLocaleDateString()}</span>
         </div>
       </CardFooter>
     </Card>

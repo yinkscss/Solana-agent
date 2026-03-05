@@ -29,7 +29,7 @@ function ruleLabel(rule: PolicyRule): string {
       return (p.tokens ?? []).join(', ');
     }
     default:
-      return rule.type.replace(/_/g, ' ');
+      return String((rule as { type: string }).type).replace(/_/g, ' ');
   }
 }
 

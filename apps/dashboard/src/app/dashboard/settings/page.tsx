@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  Bot,
   Wallet,
   ArrowLeftRight,
   Shield,
@@ -15,6 +14,7 @@ import {
   Check,
   Eye,
   EyeOff,
+  Sparkles,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,15 +22,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { AgentList } from '@/components/agents/agent-list';
+import { AgentPreferences } from '@/components/preferences/agent-preferences';
 import { WalletList } from '@/components/wallets/wallet-list';
 import { TransactionTable } from '@/components/transactions/transaction-table';
 import { PolicyList } from '@/components/policies/policy-list';
-import { CreateAgentDialog } from '@/components/agents/create-agent-dialog';
-import { CreateWalletDialog } from '@/components/wallets/create-wallet-dialog';
 import { CreatePolicyDialog } from '@/components/policies/create-policy-dialog';
 import { useAuth } from '@/lib/auth';
 import { useWebSocketContext } from '@/lib/websocket-context';
+import { useCopyToClipboard } from '@/lib/use-copy-to-clipboard';
 import { api } from '@/lib/api';
 import { mockServiceHealth } from '@/lib/mock-data';
 import type { ServiceHealth } from '@/types';
@@ -48,7 +47,7 @@ const statusBadge: Record<ServiceHealth['status'], string> = {
 };
 
 const TABS = [
-  { value: 'agents', label: 'Agents', icon: Bot },
+  { value: 'preferences', label: 'Preferences', icon: Sparkles },
   { value: 'wallets', label: 'Wallets', icon: Wallet },
   { value: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
   { value: 'policies', label: 'Policies', icon: Shield },
@@ -63,11 +62,11 @@ function SettingsContent() {
   const { apiKey } = useAuth();
   const { lastEvent } = useWebSocketContext();
 
-  const initialTab = (searchParams.get('tab') as TabValue) || 'agents';
+  const initialTab = (searchParams.get('tab') as TabValue) || 'preferences';
   const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
 
   const [showKey, setShowKey] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [services, setServices] = useState<ServiceHealth[]>([]);
 
   useEffect(() => {
@@ -83,12 +82,7 @@ function SettingsContent() {
     router.replace(`/dashboard/settings?tab=${tab}`, { scroll: false });
   }
 
-  function copyKey() {
-    if (!apiKey) return;
-    navigator.clipboard.writeText(apiKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+  const copyKey = () => apiKey && copy(apiKey);
 
   function maskKey(key: string) {
     if (key.length <= 8) return '••••••••';
@@ -137,26 +131,22 @@ function SettingsContent() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {/* Agents */}
-          <TabsContent value="agents" className="mt-0">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">Agents</h2>
-                <p className="text-sm text-muted-foreground">Manage and monitor your AI agents</p>
-              </div>
-              <CreateAgentDialog />
+          {/* Preferences (formerly Agents) */}
+          <TabsContent value="preferences" className="mt-0">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Preferences</h2>
+              <p className="text-sm text-muted-foreground">
+                Customize your SolAgent&apos;s personality and behavior
+              </p>
             </div>
-            <AgentList />
+            <AgentPreferences />
           </TabsContent>
 
           {/* Wallets */}
           <TabsContent value="wallets" className="mt-0">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">Wallets</h2>
-                <p className="text-sm text-muted-foreground">Managed wallets across networks</p>
-              </div>
-              <CreateWalletDialog />
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Wallets</h2>
+              <p className="text-sm text-muted-foreground">Manage your Solana devnet wallets</p>
             </div>
             <WalletList />
           </TabsContent>

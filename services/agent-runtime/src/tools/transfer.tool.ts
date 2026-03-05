@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { SolAgentError } from '@solagent/common';
 import type { Tool } from './tool.interface.js';
 import type { ToolResult } from '../types/index.js';
+import { FAILED_STATUSES } from './constants.js';
 
 const BASE58_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
@@ -50,10 +50,40 @@ export const createTransferTool = (transactionEngineUrl: string): Tool => ({
         return { success: false, error: `Transaction engine error: ${res.status} ${text}` };
       }
 
-      const data = await res.json();
-      return { success: true, data };
+      const json = await res.json();
+      const record = json.data ?? json;
+      const signature = record.signature ?? null;
+      const status = record.status ?? 'unknown';
+      const failed = FAILED_STATUSES.has(status);
+
+      if (failed) {
+        return {
+          success: false,
+          error: record.errorMessage ?? `Transfer failed with status: ${status}`,
+          data: {
+            transactionId: record.id ?? null,
+            status,
+            amount: parsed.data.amount,
+            destination: parsed.data.destination,
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          transactionId: record.id ?? null,
+          signature,
+          status,
+          explorerUrl: signature
+            ? `https://explorer.solana.com/tx/${signature}?cluster=devnet`
+            : null,
+          amount: parsed.data.amount,
+          destination: parsed.data.destination,
+        },
+      };
     } catch (err) {
-      const message = err instanceof SolAgentError ? err.message : 'Transfer request failed';
+      const message = err instanceof Error ? err.message : 'Transfer request failed';
       return { success: false, error: message };
     }
   },

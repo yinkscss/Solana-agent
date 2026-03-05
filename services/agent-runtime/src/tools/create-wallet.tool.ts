@@ -12,7 +12,8 @@ const createWalletParams = z.object({
 
 export const createCreateWalletTool = (walletEngineUrl: string, agentId?: string): Tool => ({
   name: 'create_wallet',
-  description: 'Create a new Solana wallet programmatically. Returns the wallet ID and public key.',
+  description:
+    'Create a new Solana wallet for the user. The wallet is automatically added to their Wallets section. Returns the wallet ID, public key, and label. After creation, tell the user their new wallet address and that it appears in Settings > Wallets.',
   parameters: createWalletParams,
 
   async execute(params: unknown): Promise<ToolResult> {

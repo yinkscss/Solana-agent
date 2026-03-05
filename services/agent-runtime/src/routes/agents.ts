@@ -20,6 +20,8 @@ const executeBodySchema = z.object({
   message: z.string().min(1),
   conversationId: z.string().optional(),
   walletId: z.string().optional(),
+  walletPublicKey: z.string().optional(),
+  confirmedTools: z.array(z.string()).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -35,6 +37,7 @@ export const createAgentRoutes = (controller: AgentController): Hono => {
   router.post('/:agentId/stop', controller.stop);
   router.delete('/:agentId', controller.destroy);
   router.post('/:agentId/execute', validateBody(executeBodySchema), controller.execute);
+  router.post('/:agentId/clear-state', controller.clearState);
 
   return router;
 };

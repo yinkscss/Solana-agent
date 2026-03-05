@@ -1,0 +1,27 @@
+# Run after deploying to Render. Set RENDER_DASHBOARD_URL and RENDER_API_GATEWAY_URL in repo secrets.
+# Optional: API_KEY (or API_KEYS) for protected endpoint check.
+name: Smoke test (deployed)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Smoke test deployed stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run smoke test
+        run: |
+          bun run scripts/smoke-test-deployed.ts "${{ secrets.RENDER_DASHBOARD_URL }}" "${{ secrets.RENDER_API_GATEWAY_URL }}"
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_KEYS: ${{ secrets.API_KEYS }}

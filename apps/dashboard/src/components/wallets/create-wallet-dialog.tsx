@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,66 +12,34 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Plus, Loader2 } from 'lucide-react';
-import { api } from '@/lib/api';
-import { mockAgents } from '@/lib/mock-data';
-import type { Agent, WalletNetwork } from '@/types';
 
 interface CreateWalletDialogProps {
   trigger?: React.ReactNode;
+  onCreated?: (wallet: { id: string; label: string }) => void;
 }
 
-const initialForm = {
-  label: '',
-  network: 'devnet' as WalletNetwork,
-  provider: 'local',
-  agentId: '',
-};
-
-export function CreateWalletDialog({ trigger }: CreateWalletDialogProps) {
+export function CreateWalletDialog({ trigger, onCreated }: CreateWalletDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState(initialForm);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [agentsLoading, setAgentsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    setAgentsLoading(true);
-    api
-      .listAgents()
-      .catch(() => mockAgents)
-      .then((data) => {
-        setAgents(data);
-        if (data.length > 0 && !form.agentId) {
-          setForm((f) => ({ ...f, agentId: data[0].id }));
-        }
-      })
-      .finally(() => setAgentsLoading(false));
-  }, [open]);
+  const [label, setLabel] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await api.createWallet({
-        agentId: form.agentId,
-        label: form.label,
-        network: form.network,
-        provider: form.provider,
+      const res = await fetch('/api/wallet-provision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label: label.trim() || 'New Wallet' }),
       });
+      if (!res.ok) throw new Error('Failed to create wallet');
+      const data = await res.json();
+      onCreated?.({ id: data.id, label: label.trim() || 'New Wallet' });
       setOpen(false);
-      setForm(initialForm);
-      window.location.reload();
+      setLabel('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create wallet');
     } finally {
@@ -83,93 +51,35 @@ export function CreateWalletDialog({ trigger }: CreateWalletDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button className="bg-violet-600 hover:bg-violet-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Wallet
+          <Button size="sm" className="bg-violet-600 hover:bg-violet-700">
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            New Wallet
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Wallet</DialogTitle>
           <DialogDescription>
-            Provision a new Solana wallet for one of your agents.
+            Add another Solana devnet wallet for your agent to manage.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Agent</label>
-            {agentsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" /> Loading agents...
-              </div>
-            ) : (
-              <Select value={form.agentId} onValueChange={(v) => setForm({ ...form, agentId: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  {agents.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Label</label>
+            <label className="text-sm font-medium">Wallet Name</label>
             <Input
-              placeholder="My Trading Wallet"
-              value={form.label}
-              onChange={(e) => setForm({ ...form, label: e.target.value })}
-              required
+              placeholder="e.g. Trading Wallet, Savings, etc."
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              autoFocus
             />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Network</label>
-              <Select
-                value={form.network}
-                onValueChange={(v) => setForm({ ...form, network: v as WalletNetwork })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="devnet">Devnet</SelectItem>
-                  <SelectItem value="testnet">Testnet</SelectItem>
-                  <SelectItem value="mainnet-beta">Mainnet-beta</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Key Provider</label>
-              <Select
-                value={form.provider}
-                onValueChange={(v) => setForm({ ...form, provider: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="local">Local</SelectItem>
-                  <SelectItem value="turnkey">Turnkey</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           {error && <p className="text-sm text-red-400">{error}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || !form.label.trim() || !form.agentId}
-              className="bg-violet-600 hover:bg-violet-700"
-            >
+            <Button type="submit" disabled={loading} className="bg-violet-600 hover:bg-violet-700">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,0 +1,23 @@
+# Production Dockerfile for Next.js dashboard (Render).
+# Set server-side env in Render: NEXT_PUBLIC_API_URL (API gateway public URL).
+# Optional overrides: see DEPLOY.md env table for full list.
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+COPY package.json bun.lock* package-lock.json* yarn.lock* pnpm-lock.yaml* turbo.json* ./
+COPY packages ./packages
+COPY apps/dashboard ./apps/dashboard
+
+RUN bun install --frozen-lockfile
+
+WORKDIR /app/apps/dashboard
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+
+RUN bun run build
+
+EXPOSE 3000
+
+CMD ["bun", "run", "start"]

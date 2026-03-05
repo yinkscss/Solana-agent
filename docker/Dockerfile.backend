@@ -1,0 +1,18 @@
+# Production Dockerfile for all backend services (agent-runtime, wallet-engine,
+# transaction-engine, defi-integration, policy-engine, notification, api-gateway).
+# Render overrides the start command per service; default below is agent-runtime.
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Copy workspace root and all packages/services needed for install
+COPY package.json bun.lock* package-lock.json* yarn.lock* pnpm-lock.yaml* turbo.json* ./
+COPY packages ./packages
+COPY services ./services
+COPY apps/api-gateway ./apps/api-gateway
+
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Default start command; override in render.yaml per service
+CMD ["bun", "run", "services/agent-runtime/src/index.ts"]

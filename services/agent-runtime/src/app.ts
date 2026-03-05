@@ -14,6 +14,7 @@ import { createBalanceTool } from './tools/balance.tool.js';
 import { createSwapTool } from './tools/swap.tool.js';
 import { createCreateWalletTool } from './tools/create-wallet.tool.js';
 import { createAirdropTool } from './tools/airdrop.tool.js';
+import { createGetTransactionsTool } from './tools/transactions.tool.js';
 import { createAgentController } from './controllers/agent.controller.js';
 import { createAgentRoutes, createOrgAgentRoutes } from './routes/agents.js';
 import { createDrizzleAgentRepo } from './repositories/drizzle-agent.repository.js';
@@ -80,9 +81,10 @@ export const createApp = (deps?: AppDeps) => {
   const toolRegistry = new ToolRegistry();
   toolRegistry.register(createTransferTool(env.TRANSACTION_ENGINE_URL));
   toolRegistry.register(createBalanceTool(env.WALLET_ENGINE_URL));
-  toolRegistry.register(createSwapTool(env.DEFI_ENGINE_URL));
+  toolRegistry.register(createSwapTool(env.DEFI_ENGINE_URL, env.WALLET_ENGINE_URL));
   toolRegistry.register(createCreateWalletTool(env.WALLET_ENGINE_URL));
   toolRegistry.register(createAirdropTool(env.WALLET_ENGINE_URL, env.SOLANA_RPC_URL));
+  toolRegistry.register(createGetTransactionsTool(env.TRANSACTION_ENGINE_URL));
 
   const agentService = createAgentService(repo);
 

@@ -1,14 +1,15 @@
 'use client';
 
-import { Send, ArrowLeftRight, Droplets, Wallet, Check, X, Loader2 } from 'lucide-react';
+import { Send, ArrowLeftRight, Droplets, Wallet, Check, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { truncateAddress } from '@/lib/format';
 
 export interface ToolCallInfo {
   name: string;
   arguments: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'executed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'executed' | 'failed';
 }
 
 interface ConfirmationCardProps {
@@ -16,11 +17,6 @@ interface ConfirmationCardProps {
   onConfirm: () => void;
   onCancel: () => void;
   disabled?: boolean;
-}
-
-function truncateAddress(addr: string): string {
-  if (addr.length <= 12) return addr;
-  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
 function parseArgs(raw: string): Record<string, unknown> {
@@ -37,6 +33,32 @@ const TOOL_CONFIG: Record<string, { icon: React.ReactNode; label: string }> = {
   request_airdrop: { icon: <Droplets className="h-4 w-4" />, label: 'Get Test SOL' },
   create_wallet: { icon: <Wallet className="h-4 w-4" />, label: 'Create Wallet' },
 };
+
+function badgeClassName(status: ToolCallInfo['status']): string {
+  switch (status) {
+    case 'executed':
+      return 'border-emerald-500/30 text-emerald-400';
+    case 'failed':
+      return 'border-red-500/30 text-red-400';
+    case 'confirmed':
+      return 'border-amber-500/30 text-amber-400';
+    default:
+      return 'border-zinc-500/30 text-zinc-400';
+  }
+}
+
+function badgeLabel(status: ToolCallInfo['status']): string {
+  switch (status) {
+    case 'executed':
+      return 'Executed ✓';
+    case 'failed':
+      return 'Failed ✗';
+    case 'confirmed':
+      return 'Processing...';
+    default:
+      return 'Cancelled';
+  }
+}
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -101,17 +123,8 @@ export function ConfirmationCard({
         </div>
 
         {resolved ? (
-          <Badge
-            variant="outline"
-            className={
-              toolCall.status === 'confirmed' || toolCall.status === 'executed'
-                ? 'border-emerald-500/30 text-emerald-400'
-                : 'border-zinc-500/30 text-zinc-400'
-            }
-          >
-            {toolCall.status === 'confirmed' || toolCall.status === 'executed'
-              ? 'Confirmed ✓'
-              : 'Cancelled'}
+          <Badge variant="outline" className={badgeClassName(toolCall.status)}>
+            {badgeLabel(toolCall.status)}
           </Badge>
         ) : (
           <div className="flex items-center gap-2 pt-1">
@@ -141,11 +154,18 @@ export function ConfirmationCard({
   );
 }
 
+const TOOL_LABELS: Record<string, string> = {
+  get_balance: 'Checked balance',
+  request_airdrop: 'Requested airdrop',
+  get_transactions: 'Fetched transactions',
+  create_wallet: 'Created wallet',
+};
+
 export function ReadOnlyToolBadge({ name }: { name: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2 py-0.5 text-[11px] font-mono text-muted-foreground">
-      <Loader2 className="h-3 w-3 animate-spin" />
-      {name === 'get_balance' ? 'Checking balance...' : name}
+      <Check className="h-3 w-3 text-emerald-400" />
+      {TOOL_LABELS[name] ?? name}
     </span>
   );
 }

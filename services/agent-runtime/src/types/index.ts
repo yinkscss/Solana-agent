@@ -38,6 +38,8 @@ export interface AgentInput {
   message: string;
   conversationId?: string;
   walletId?: string;
+  walletPublicKey?: string;
+  confirmedTools?: string[];
   metadata?: Record<string, unknown>;
 }
 

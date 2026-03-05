@@ -114,6 +114,10 @@ Spins up 3 agent wallets, funds them via airdrop, and executes cross-agent trans
 
 Navigate to [http://localhost:3000](http://localhost:3000) to view agents, wallets, transactions, and policies in the web UI.
 
+### Deploy to production
+
+See [docs/DEPLOY.md](docs/DEPLOY.md) for Docker Compose, Render (full cloud), Vercel + backends, and production checklist.
+
 ## Project Structure
 
 ```
@@ -163,75 +167,75 @@ solana-agent/
 
 ### Wallets (Wallet Engine — port 3002)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/wallets` | Create a new wallet |
-| GET | `/api/v1/wallets/:walletId` | Get wallet details |
-| GET | `/api/v1/wallets/:walletId/balance` | Get SOL balance |
-| GET | `/api/v1/wallets/:walletId/tokens` | Get SPL token balances |
-| POST | `/api/v1/wallets/:walletId/sign` | Sign a transaction |
-| POST | `/api/v1/wallets/:walletId/recover` | Recover a wallet |
-| DELETE | `/api/v1/wallets/:walletId` | Deactivate a wallet |
-| GET | `/api/v1/agents/:agentId/wallets` | List wallets for an agent |
+| Method | Endpoint                            | Description               |
+| ------ | ----------------------------------- | ------------------------- |
+| POST   | `/api/v1/wallets`                   | Create a new wallet       |
+| GET    | `/api/v1/wallets/:walletId`         | Get wallet details        |
+| GET    | `/api/v1/wallets/:walletId/balance` | Get SOL balance           |
+| GET    | `/api/v1/wallets/:walletId/tokens`  | Get SPL token balances    |
+| POST   | `/api/v1/wallets/:walletId/sign`    | Sign a transaction        |
+| POST   | `/api/v1/wallets/:walletId/recover` | Recover a wallet          |
+| DELETE | `/api/v1/wallets/:walletId`         | Deactivate a wallet       |
+| GET    | `/api/v1/agents/:agentId/wallets`   | List wallets for an agent |
 
 ### Transactions (Transaction Engine — port 3004)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/transactions` | Create and submit a transaction |
-| GET | `/api/v1/transactions/:txId` | Get transaction status |
-| POST | `/api/v1/transactions/:txId/retry` | Retry a failed transaction |
-| GET | `/api/v1/wallets/:walletId/transactions` | List wallet transactions |
+| Method | Endpoint                                 | Description                     |
+| ------ | ---------------------------------------- | ------------------------------- |
+| POST   | `/api/v1/transactions`                   | Create and submit a transaction |
+| GET    | `/api/v1/transactions/:txId`             | Get transaction status          |
+| POST   | `/api/v1/transactions/:txId/retry`       | Retry a failed transaction      |
+| GET    | `/api/v1/wallets/:walletId/transactions` | List wallet transactions        |
 
 ### Policies (Policy Engine — port 3003)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/policies` | Create a policy |
-| GET | `/api/v1/policies/:policyId` | Get policy details |
-| PUT | `/api/v1/policies/:policyId` | Update a policy |
-| DELETE | `/api/v1/policies/:policyId` | Deactivate a policy |
-| POST | `/api/v1/policies/:policyId/activate` | Reactivate a policy |
-| GET | `/api/v1/wallets/:walletId/policies` | List wallet policies |
-| POST | `/api/v1/evaluate` | Evaluate a transaction against policies |
+| Method | Endpoint                              | Description                             |
+| ------ | ------------------------------------- | --------------------------------------- |
+| POST   | `/api/v1/policies`                    | Create a policy                         |
+| GET    | `/api/v1/policies/:policyId`          | Get policy details                      |
+| PUT    | `/api/v1/policies/:policyId`          | Update a policy                         |
+| DELETE | `/api/v1/policies/:policyId`          | Deactivate a policy                     |
+| POST   | `/api/v1/policies/:policyId/activate` | Reactivate a policy                     |
+| GET    | `/api/v1/wallets/:walletId/policies`  | List wallet policies                    |
+| POST   | `/api/v1/evaluate`                    | Evaluate a transaction against policies |
 
 ### DeFi (DeFi Integration — port 3005)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/defi/quote` | Get a swap quote |
-| POST | `/api/v1/defi/swap` | Execute a token swap |
-| POST | `/api/v1/defi/stake` | Stake SOL |
-| POST | `/api/v1/defi/unstake` | Unstake SOL |
-| GET | `/api/v1/defi/price/:mint` | Get token price |
-| GET | `/api/v1/defi/protocols` | List supported protocols |
-| GET | `/api/v1/defi/pools/:protocol/:poolId` | Get pool info |
+| Method | Endpoint                               | Description              |
+| ------ | -------------------------------------- | ------------------------ |
+| GET    | `/api/v1/defi/quote`                   | Get a swap quote         |
+| POST   | `/api/v1/defi/swap`                    | Execute a token swap     |
+| POST   | `/api/v1/defi/stake`                   | Stake SOL                |
+| POST   | `/api/v1/defi/unstake`                 | Unstake SOL              |
+| GET    | `/api/v1/defi/price/:mint`             | Get token price          |
+| GET    | `/api/v1/defi/protocols`               | List supported protocols |
+| GET    | `/api/v1/defi/pools/:protocol/:poolId` | Get pool info            |
 
 ### Agents (Agent Runtime — port 3001)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/agents` | Create an agent |
-| GET | `/api/v1/agents/:agentId` | Get agent details |
-| PUT | `/api/v1/agents/:agentId` | Update agent configuration |
-| POST | `/api/v1/agents/:agentId/start` | Start an agent |
-| POST | `/api/v1/agents/:agentId/pause` | Pause an agent |
-| POST | `/api/v1/agents/:agentId/stop` | Stop an agent |
-| POST | `/api/v1/agents/:agentId/execute` | Execute an agent action |
-| DELETE | `/api/v1/agents/:agentId` | Delete an agent |
-| GET | `/api/v1/orgs/:orgId/agents` | List agents for an organization |
+| Method | Endpoint                          | Description                     |
+| ------ | --------------------------------- | ------------------------------- |
+| POST   | `/api/v1/agents`                  | Create an agent                 |
+| GET    | `/api/v1/agents/:agentId`         | Get agent details               |
+| PUT    | `/api/v1/agents/:agentId`         | Update agent configuration      |
+| POST   | `/api/v1/agents/:agentId/start`   | Start an agent                  |
+| POST   | `/api/v1/agents/:agentId/pause`   | Pause an agent                  |
+| POST   | `/api/v1/agents/:agentId/stop`    | Stop an agent                   |
+| POST   | `/api/v1/agents/:agentId/execute` | Execute an agent action         |
+| DELETE | `/api/v1/agents/:agentId`         | Delete an agent                 |
+| GET    | `/api/v1/orgs/:orgId/agents`      | List agents for an organization |
 
 ### Notifications (Notification Service — port 3006)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/webhooks` | Register a webhook |
-| GET | `/api/v1/webhooks/:webhookId` | Get webhook details |
-| PUT | `/api/v1/webhooks/:webhookId` | Update a webhook |
-| DELETE | `/api/v1/webhooks/:webhookId` | Delete a webhook |
-| POST | `/api/v1/alerts` | Create an alert rule |
-| GET | `/api/v1/orgs/:orgId/alerts` | List organization alerts |
-| WS | `/ws?orgId=...` | WebSocket stream for real-time events |
+| Method | Endpoint                      | Description                           |
+| ------ | ----------------------------- | ------------------------------------- |
+| POST   | `/api/v1/webhooks`            | Register a webhook                    |
+| GET    | `/api/v1/webhooks/:webhookId` | Get webhook details                   |
+| PUT    | `/api/v1/webhooks/:webhookId` | Update a webhook                      |
+| DELETE | `/api/v1/webhooks/:webhookId` | Delete a webhook                      |
+| POST   | `/api/v1/alerts`              | Create an alert rule                  |
+| GET    | `/api/v1/orgs/:orgId/alerts`  | List organization alerts              |
+| WS     | `/ws?orgId=...`               | WebSocket stream for real-time events |
 
 All endpoints are accessible through the API Gateway at `http://localhost:8080` with the same paths.
 
@@ -314,20 +318,20 @@ Both scripts include retry logic for devnet airdrop rate limits and produce Sola
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `postgresql://solagent:dev_password@localhost:5432/solagent` | PostgreSQL connection |
-| `REDIS_URL` | `redis://localhost:6379` | Redis connection |
-| `REDPANDA_BROKERS` | `localhost:9092` | RedPanda/Kafka brokers |
-| `SOLANA_RPC_URL` | `https://api.devnet.solana.com` | Solana RPC endpoint |
-| `SOLANA_NETWORK` | `devnet` | Solana network |
-| `KORA_URL` | `http://localhost:8911` | Kora fee relayer |
-| `API_GATEWAY_PORT` | `8080` | Gateway port |
-| `RATE_LIMIT_RPM` | `100` | Rate limit (requests/min) |
-| `HELIUS_API_KEY` | — | Optional Helius RPC key |
-| `TURNKEY_API_KEY` | — | Turnkey HSM API key |
-| `TURNKEY_ORGANIZATION_ID` | — | Turnkey organization |
-| `LOG_LEVEL` | `debug` | Logging verbosity |
+| Variable                  | Default                                                      | Description               |
+| ------------------------- | ------------------------------------------------------------ | ------------------------- |
+| `DATABASE_URL`            | `postgresql://solagent:dev_password@localhost:5432/solagent` | PostgreSQL connection     |
+| `REDIS_URL`               | `redis://localhost:6379`                                     | Redis connection          |
+| `REDPANDA_BROKERS`        | `localhost:9092`                                             | RedPanda/Kafka brokers    |
+| `SOLANA_RPC_URL`          | `https://api.devnet.solana.com`                              | Solana RPC endpoint       |
+| `SOLANA_NETWORK`          | `devnet`                                                     | Solana network            |
+| `KORA_URL`                | `http://localhost:8911`                                      | Kora fee relayer          |
+| `API_GATEWAY_PORT`        | `8080`                                                       | Gateway port              |
+| `RATE_LIMIT_RPM`          | `100`                                                        | Rate limit (requests/min) |
+| `HELIUS_API_KEY`          | —                                                            | Optional Helius RPC key   |
+| `TURNKEY_API_KEY`         | —                                                            | Turnkey HSM API key       |
+| `TURNKEY_ORGANIZATION_ID` | —                                                            | Turnkey organization      |
+| `LOG_LEVEL`               | `debug`                                                      | Logging verbosity         |
 
 ## Observability
 

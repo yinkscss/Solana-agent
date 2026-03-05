@@ -1,0 +1,193 @@
+# Render Blueprint: SolAgent full stack (Postgres, Redis, 7 backends, api-gateway, dashboard).
+# Apply in Render Dashboard (Connect repo → New Blueprint) and set secrets (OPENAI_API_KEY, etc.).
+# See docs/DEPLOY.md for step-by-step and env table.
+
+databases:
+  - name: solagent-db
+    plan: basic-256mb
+    databaseName: solagent
+
+services:
+  # Redis-compatible Key Value (required by agent-runtime, wallet-engine, policy-engine, notification, etc.)
+  - type: keyvalue
+    name: solagent-redis
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all
+    plan: free
+
+  # --- Backends (same Docker image; dockerCommand overrides per service) ---
+  - type: web
+    runtime: docker
+    name: agent-runtime
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/agent-runtime/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solagent-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: WALLET_ENGINE_URL
+        value: http://wallet-engine:3002
+      - key: POLICY_ENGINE_URL
+        value: http://policy-engine:3003
+      - key: TRANSACTION_ENGINE_URL
+        value: http://transaction-engine:3004
+      - key: DEFI_ENGINE_URL
+        value: http://defi-integration:3005
+    healthCheckPath: /health
+
+  - type: web
+    runtime: docker
+    name: wallet-engine
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/wallet-engine/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3002
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solagent-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+      - key: SOLANA_RPC_URL
+        sync: false
+    healthCheckPath: /health
+
+  - type: web
+    runtime: docker
+    name: policy-engine
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/policy-engine/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3003
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solagent-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+    healthCheckPath: /health
+
+  - type: web
+    runtime: docker
+    name: transaction-engine
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/transaction-engine/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3004
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solagent-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+      - key: WALLET_ENGINE_URL
+        value: http://wallet-engine:3002
+      - key: POLICY_ENGINE_URL
+        value: http://policy-engine:3003
+      - key: SOLANA_RPC_URL
+        sync: false
+    healthCheckPath: /health
+
+  - type: web
+    runtime: docker
+    name: defi-integration
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/defi-integration/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3005
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+      - key: TRANSACTION_ENGINE_URL
+        value: http://transaction-engine:3004
+      - key: WALLET_ENGINE_URL
+        value: http://wallet-engine:3002
+      - key: SOLANA_RPC_URL
+        sync: false
+    healthCheckPath: /health
+
+  - type: web
+    runtime: docker
+    name: notification
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run services/notification/src/index.ts
+    envVars:
+      - key: PORT
+        value: 3006
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: solagent-redis
+          property: connectionString
+    healthCheckPath: /health
+
+  # API Gateway (public); points to backends via internal URLs
+  - type: web
+    runtime: docker
+    name: api-gateway
+    dockerfilePath: docker/Dockerfile.backend
+    dockerContext: .
+    dockerCommand: bun run apps/api-gateway/src/index.ts
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: AGENT_RUNTIME_URL
+        value: http://agent-runtime:3001
+      - key: WALLET_ENGINE_URL
+        value: http://wallet-engine:3002
+      - key: POLICY_ENGINE_URL
+        value: http://policy-engine:3003
+      - key: TRANSACTION_ENGINE_URL
+        value: http://transaction-engine:3004
+      - key: DEFI_ENGINE_URL
+        value: http://defi-integration:3005
+      - key: NOTIFICATION_URL
+        value: http://notification:3006
+      - key: API_KEYS
+        sync: false
+    healthCheckPath: /health
+
+  # Dashboard (Next.js). Set NEXT_PUBLIC_API_URL in Render Dashboard to api-gateway's public URL after deploy.
+  - type: web
+    runtime: docker
+    name: dashboard
+    dockerfilePath: docker/Dockerfile.dashboard
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+    healthCheckPath: /
