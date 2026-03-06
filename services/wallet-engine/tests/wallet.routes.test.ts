@@ -36,6 +36,7 @@ const createMockWalletService = (): WalletService =>
   ({
     createWallet: vi.fn(async () => mockWallet),
     getWallet: vi.fn(async () => mockWallet),
+    getWalletByPublicKey: vi.fn(async () => mockWallet),
     getWalletsByAgent: vi.fn(async () => [mockWallet]),
     deactivateWallet: vi.fn(async () => ({ ...mockWallet, status: 'frozen' as const })),
     recoverWallet: vi.fn(async () => ({ ...mockWallet, status: 'recovering' as const })),

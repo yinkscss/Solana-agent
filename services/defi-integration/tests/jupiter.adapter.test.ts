@@ -88,13 +88,13 @@ describe('Jupiter Adapter', () => {
     ).rejects.toThrow('Jupiter');
   });
 
-  it('builds swap instructions from quote', async () => {
+  it('builds swap transaction from quote', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify(mockSwapResponse), { status: 200 }),
     );
 
     const adapter = createJupiterAdapter(API_URL);
-    const instructions = await adapter.buildSwapInstructions!({
+    const result = await adapter.buildSwapTransaction!({
       walletAddress: 'WaLLet111111111111111111111111111111111111',
       quote: {
         inputMint: 'So11111111111111111111111111111111111111112',
@@ -114,9 +114,10 @@ describe('Jupiter Adapter', () => {
     expect(sentBody.userPublicKey).toBe('WaLLet111111111111111111111111111111111111');
     expect(sentBody.wrapAndUnwrapSol).toBe(true);
 
-    expect(instructions).toHaveLength(1);
-    expect(instructions[0]!.programId).toBe('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4');
-    expect(instructions[0]!.data).toBeTruthy();
+    expect(result.transaction).toBe(mockSwapResponse.swapTransaction);
+    expect(result.inputAmount).toBe('1000000000');
+    expect(result.outputAmount).toBe('23450000');
+    expect(result.priceImpactPct).toBe(0.12);
   });
 
   it('throws ExternalServiceError on swap build failure', async () => {
@@ -126,7 +127,7 @@ describe('Jupiter Adapter', () => {
 
     const adapter = createJupiterAdapter(API_URL);
     await expect(
-      adapter.buildSwapInstructions!({
+      adapter.buildSwapTransaction!({
         walletAddress: 'WaLLet111111111111111111111111111111111111',
         quote: {
           inputMint: 'x',

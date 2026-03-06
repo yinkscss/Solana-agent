@@ -1,4 +1,29 @@
+import type { Env } from '../config/env.js';
+
 const DEFAULT_TIMEOUT_MS = 30_000;
+
+export type ServiceRoute = { prefix: string; target: string };
+
+export function buildServiceRoutes(env: Env): ServiceRoute[] {
+  return [
+    { prefix: '/api/v1/agents', target: env.AGENT_RUNTIME_URL },
+    { prefix: '/api/v1/wallets', target: env.WALLET_ENGINE_URL },
+    { prefix: '/api/v1/policies', target: env.POLICY_ENGINE_URL },
+    { prefix: '/api/v1/evaluate', target: env.POLICY_ENGINE_URL },
+    { prefix: '/api/v1/transactions', target: env.TRANSACTION_ENGINE_URL },
+    { prefix: '/api/v1/defi', target: env.DEFI_ENGINE_URL },
+    { prefix: '/api/v1/webhooks', target: env.NOTIFICATION_URL },
+    { prefix: '/api/v1/alerts', target: env.NOTIFICATION_URL },
+    { prefix: '/ws', target: env.NOTIFICATION_URL },
+  ];
+}
+
+export function resolveTarget(
+  routes: ServiceRoute[],
+  pathname: string,
+): ServiceRoute | undefined {
+  return routes.find((r) => pathname.startsWith(r.prefix));
+}
 
 export const proxyRequest = async (
   target: string,

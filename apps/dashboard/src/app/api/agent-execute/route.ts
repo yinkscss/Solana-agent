@@ -115,7 +115,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const lastMessage = body.messages[body.messages.length - 1];
+    const messages = body.messages ?? [];
+    const lastMessage = messages[messages.length - 1];
     const response = await fetch(`${agentRuntimeUrl}/api/v1/agents/${body.agentId}/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

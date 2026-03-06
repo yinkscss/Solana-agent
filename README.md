@@ -114,6 +114,23 @@ Spins up 3 agent wallets, funds them via airdrop, and executes cross-agent trans
 
 Navigate to [http://localhost:3000](http://localhost:3000) to view agents, wallets, transactions, and policies in the web UI.
 
+### How to use the app
+
+1. **Open the dashboard**  
+   Go to [http://localhost:3000](http://localhost:3000). You’ll see the main dashboard with agents, wallets, transactions, and policies.
+
+2. **Create an agent and wallet**  
+   Use the UI or the API to create an agent. The agent can create and own one or more wallets. Wallets are created programmatically and hold SOL and SPL tokens; the agent signs transactions automatically (no manual approval in this prototype).
+
+3. **Chat-first interaction**  
+   Interact with the system via the dashboard’s chat or API: ask the agent to create a wallet, check balance, request a devnet airdrop (e.g. from [Solana Faucet](https://faucet.solana.com)), send SOL, run a swap (Jupiter), or view a transaction on [Solana Explorer](https://explorer.solana.com) (devnet). The agent uses tools to perform these actions.
+
+4. **Wallets and transactions**  
+   In the dashboard you can list wallets per agent, view SOL/SPL balances, and see transaction history. Policies (optional) can restrict what transactions the agent is allowed to submit.
+
+5. **Devnet**  
+   The app targets Solana devnet by default. Use devnet SOL from the faucet for airdrops and testing. Scripts: `bun run devnet:smoke`, `bun run devnet:agent`, `bun run devnet:multi-agent`, `bun run devnet:jupiter` for smoke tests and demos.
+
 ### Deploy to production
 
 See [docs/DEPLOY.md](docs/DEPLOY.md) for Docker Compose, Render (full cloud), Vercel + backends, and production checklist.
